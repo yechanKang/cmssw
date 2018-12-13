@@ -25,7 +25,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/global/EDProducer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/EDGetToken.h"
@@ -38,14 +38,17 @@
 // class decleration
 //
 
-class GctDigiToRaw : public edm::global::EDProducer<> {
+class GctDigiToRaw : public edm::EDProducer {
  public:
   explicit GctDigiToRaw(const edm::ParameterSet&);
+  ~GctDigiToRaw() override;
   
  private: // methods
-  void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const final;
+  void beginJob() override;
+  void produce(edm::Event&, const edm::EventSetup&) override;
+  void endJob() override ;
   
-  void print(FEDRawData& data) const;
+  void print(FEDRawData& data);
 
  private:  // members
 
@@ -64,19 +67,22 @@ class GctDigiToRaw : public edm::global::EDProducer<> {
   edm::EDGetTokenT<L1GctJetCountsCollection> tokenGctJetCounts_;
   edm::EDGetTokenT<L1CaloEmCollection> tokenCaloEm_;
   edm::EDGetTokenT<L1CaloRegionCollection> tokenCaloRegion_;
-  edm::EDPutTokenT<FEDRawDataCollection> tokenPut_;
+
   // pack flags
-  const bool packRctEm_;
-  const bool packRctCalo_;
+  bool packRctEm_;
+  bool packRctCalo_;
 
   // FED numbers
-  const int fedId_;            
+  int fedId_;            
 
   // print out for each event
-  const bool verbose_;
+  bool verbose_;
 
   // counter events
-  mutable std::atomic<int> counter_;          
+  int counter_;          
+  
+  // digi to block converter
+  GctFormatTranslateMCLegacy formatTranslator_;
 
 };
 

@@ -15,6 +15,8 @@
  *
  */
 
+#include <boost/foreach.hpp>
+
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "CommonTools/UtilAlgos/interface/StringCutObjectSelector.h"
 
@@ -57,7 +59,7 @@ PFTauViewRefSelector::filter(edm::Event& evt, const edm::EventSetup& es) {
   reco::PFTauRefVector inputRefs =
       reco::tau::castView<reco::PFTauRefVector>(input);
 
-  for(auto const& tau : inputRefs) {
+  BOOST_FOREACH(const reco::PFTauRef &tau, inputRefs) {
     if (outputSelector_.get() && (*outputSelector_)(*tau)) {
       output->push_back(tau);
     }

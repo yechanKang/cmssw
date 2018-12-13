@@ -8,11 +8,10 @@
 #include <sstream>
 #include <limits>
 
-MTDTopology::MTDTopology( const int& topologyMode, const BTLValues& btl, const ETLValues& etl ) 
-  : mtdTopologyMode_(topologyMode),
-    btlVals_(btl),
-    etlVals_(etl),
-    bits_per_field{
+MTDTopology::MTDTopology( const BTLValues& btl, const ETLValues& etl ) 
+    : btlVals_(btl),
+      etlVals_(etl),
+      bits_per_field{
   [BTLModule] = { btlVals_.moduleStartBit_, btlVals_.moduleMask_, MTDDetId::BTL},
   [BTLTray]   = { btlVals_.trayStartBit_, btlVals_.trayMask_, MTDDetId::BTL},
   [BTLLayer]  = { btlVals_.layerStartBit_,  btlVals_.layerMask_, MTDDetId::BTL},
@@ -21,7 +20,7 @@ MTDTopology::MTDTopology( const int& topologyMode, const BTLValues& btl, const E
   [ETLRing]   = { etlVals_.ringStartBit_,  etlVals_.ringMask_,  MTDDetId::ETL},
   [ETLLayer]  = { etlVals_.layerStartBit_,  etlVals_.layerMask_,  MTDDetId::ETL},
   [ETLSide]   = { etlVals_.sideStartBit_,   etlVals_.sideMask_,   MTDDetId::ETL}
-} 
+  } 
 {}
 
 

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <TF1.h>
 #include <iostream>
+#include <boost/foreach.hpp>
 
 typedef reco::Particle::LorentzVector lorentzVector;
 
@@ -64,7 +65,7 @@ BackgroundHandler::BackgroundHandler( const std::vector<int> & identifiers,
 
   unsigned int i=0;
   typedef std::vector<unsigned int> indexVec;
-  for(auto const& index : indexes) {
+  BOOST_FOREACH(const indexVec & index, indexes) {
     //     double lowerLimit = resMassForRegion[i] - massWindowHalfWidth[regToResHW_[i]]*leftWindowFactors[i];
     //     double upperLimit = resMassForRegion[i] + massWindowHalfWidth[regToResHW_[i]]*rightWindowFactors[i];
     //     backgroundWindow_.push_back( MassWindow( resMassForRegion[i], lowerLimit, upperLimit, index,
@@ -176,7 +177,7 @@ void BackgroundHandler::rescale( std::vector<double> & parBgr, const double * Re
   // Loop on all regions and on all the resonances of each region and compute the background fraction
   // for each resonance window.
   unsigned int iRegion = 0;
-  for(auto const& backgroundWindow : backgroundWindow_)
+  BOOST_FOREACH(MassWindow & backgroundWindow, backgroundWindow_)
   {
     // Iterator pointing to the first parameter of this background function in the full set of parameters
     std::vector<double>::const_iterator parBgrIt = (parBgr.begin()+parNumsRegions_[iRegion]);
@@ -188,7 +189,7 @@ void BackgroundHandler::rescale( std::vector<double> & parBgr, const double * Re
                                                          backgroundWindow.upperBound());
 
     // index is the index of the resonance in the background window
-    for( unsigned int index : *(backgroundWindow.indexes()) )
+    BOOST_FOREACH( unsigned int index, *(backgroundWindow.indexes()) )
     {
       // First set all parameters of the resonance window background function to those of the corresponding region
       for( int iPar = 0; iPar < resonanceWindow_[index].backgroundFunction()->parNum(); ++iPar ) {
@@ -248,23 +249,23 @@ void BackgroundHandler::countEventsInAllWindows(const std::vector<std::pair<reco
                                                 const double & weight)
 {
   // First reset all the counters
-  for(auto& resonanceWindow : resonanceWindow_) {
+  BOOST_FOREACH(MassWindow & resonanceWindow, resonanceWindow_) {
     resonanceWindow.resetCounter();
   }
   // Count events in background windows
-  for(auto& backgroundWindow : backgroundWindow_) {
+  BOOST_FOREACH(MassWindow & backgroundWindow, backgroundWindow_) {
     backgroundWindow.resetCounter();
   }
 
   // Now count the events in each window
   std::pair<lorentzVector,lorentzVector> muonPair;
-  for(auto const& muonPair : muonPairs) {
+  BOOST_FOREACH(muonPair, muonPairs) {
     // Count events in resonance windows
-    for(auto& resonanceWindow : resonanceWindow_) {
+    BOOST_FOREACH(MassWindow & resonanceWindow, resonanceWindow_) {
       resonanceWindow.count((muonPair.first + muonPair.second).mass(), weight);
     }
     // Count events in background windows
-    for(auto& backgroundWindow : backgroundWindow_) {
+    BOOST_FOREACH(MassWindow & backgroundWindow, backgroundWindow_) {
       backgroundWindow.count((muonPair.first + muonPair.second).mass(), weight);
     }
   }

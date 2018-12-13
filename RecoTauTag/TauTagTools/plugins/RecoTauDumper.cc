@@ -10,6 +10,7 @@
  *
  * =====================================================================================
  */
+#include <boost/foreach.hpp>
 #include <sstream>
 
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -45,7 +46,7 @@ void write(std::ostringstream& output, const reco::PFTau& tau) {
 void write(std::ostringstream& output, const reco::PFJet& jet) {
   output << " ------------------------------------" << std::endl;
   output << jet << std::endl;
-  for(auto const& cand : jet.getPFConstituents()) {
+  BOOST_FOREACH(const reco::PFCandidatePtr& cand, jet.getPFConstituents()) {
     output << " --> " << *cand << std::endl;
   }
   output << std::endl;
@@ -85,7 +86,7 @@ CollectionDumper<T>::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   output << " * * * <" << moduleName_
     << "> Dump - source: [" << src_ << "]" << std::endl;
 
-  for(auto const& obj : *view) {
+  BOOST_FOREACH(const T& obj, *view) {
     write(output, obj);
   }
   std::cout << output.str();

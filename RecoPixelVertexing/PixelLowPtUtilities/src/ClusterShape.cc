@@ -76,6 +76,18 @@ bool ClusterShape::processColumn(pair<int,int> pos, bool inTheLoop)
 }
 
 /*****************************************************************************/
+struct lessPixel : public binary_function<SiPixelCluster::Pixel,
+                                          SiPixelCluster::Pixel,bool>
+{
+  bool operator()(const SiPixelCluster::Pixel& a,
+                  const SiPixelCluster::Pixel& b) const
+  {
+    // slightly faster by avoiding branches
+    return (a.x < b.x) | ((a.x == b.x) & (a.y < b.y));
+  }
+};
+
+/*****************************************************************************/
 void ClusterShape::determineShape
   (const PixelGeomDetUnit& pixelDet,
    const SiPixelRecHit& recHit, ClusterData& data)
@@ -107,10 +119,7 @@ void ClusterShape::determineShape
   for(size_t i=0; i<npixels; ++i) {
     pixels_.push_back(cluster.pixel(i));
   }
-  sort(pixels_.begin(),pixels_.end(),[](auto const& a, auto const& b){
-              // slightly faster by avoiding branches
-              return (a.x < b.x) | ((a.x == b.x) & (a.y < b.y));
-          });
+  sort(pixels_.begin(),pixels_.end(),lessPixel());
 
   // Look at all the pixels
   for(const auto& pixel: pixels_)

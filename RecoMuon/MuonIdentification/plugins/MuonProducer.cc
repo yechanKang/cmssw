@@ -12,6 +12,9 @@
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 
 
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
 #ifndef dout
 #define dout if(debug_) std::cout
 #endif
@@ -365,7 +368,7 @@ void MuonProducer::produce(edm::Event& event, const edm::EventSetup& eventSetup)
 
    reco::MuonRef::key_type muIndex = 0;
    unsigned int i = 0;
-   for(auto const& inMuon : *inputMuons){
+   foreach(const reco::Muon &inMuon, *inputMuons){
      
      reco::MuonRef muRef(inputMuons, muIndex);
      muonRefColl[i] = reco::MuonRef(outputMuonsRefProd, muIndex++);

@@ -5,6 +5,7 @@
 #include "MagneticField/Engine/interface/MagneticField.h"
 #include "CondFormats/SiStripObjects/interface/SiStripLorentzAngle.h"
 #include "Geometry/TrackerGeometryBuilder/interface/StripGeomDetUnit.h"
+#include "boost/foreach.hpp"
 
 
 namespace shallow {
@@ -16,8 +17,8 @@ make_cluster_map( const edm::Event& iEvent, const edm::EDGetTokenT< edmNew::DetS
   iEvent.getByToken(cluster_token, clusters);
   
   unsigned int clusterindex = 0;  
-  for(auto const& ds : *clusters)
-    for(auto const& cluster : ds)
+  BOOST_FOREACH(const edmNew::DetSet<SiStripCluster>& ds, *clusters)
+    BOOST_FOREACH(const SiStripCluster& cluster, ds)
     clustermap.insert( std::make_pair( std::make_pair(ds.detId(),cluster.firstStrip()),
 				       clusterindex++));
   return clustermap;

@@ -102,7 +102,7 @@ vector<L1MuGMTExtendedCand>  L1MuGMTReadoutRecord::getGMTCands() const {
   }
     
   // sort by rank
-  stable_sort( cands.begin(), cands.end(), L1MuGMTExtendedCand::rankRef );
+  stable_sort( cands.begin(), cands.end(), L1MuGMTExtendedCand::RankRef() );
 
 
   return cands;
@@ -350,3 +350,23 @@ void L1MuGMTReadoutRecord::setQuietbit(int eta, int phi) {
   m_Quietbits[idx_word] |= mask;
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

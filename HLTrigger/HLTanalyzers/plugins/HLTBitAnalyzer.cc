@@ -2,6 +2,8 @@
 // Description:  Example of Analysis driver originally from Jeremy Mans, 
 // Date:  13-October-2006
 
+#include <boost/foreach.hpp>
+
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
@@ -187,7 +189,7 @@ void HLTBitAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
     errCnt++;
     std::stringstream out;       
     out <<  "OpenHLT analyser - missing collections:";
-    for(auto const& entry : missing)
+    BOOST_FOREACH(const MissingCollectionInfo & entry, missing)
       out << "\n\t" << entry.first << ": " << entry.second->encode();
     edm::LogPrint("OpenHLT") << out.str() << std::endl; 
     if (errCnt == errMax())

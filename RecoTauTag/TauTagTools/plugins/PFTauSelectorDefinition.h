@@ -11,6 +11,8 @@
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
 #include <memory>
+#include <boost/foreach.hpp>
+
 #include <iostream>
 
 struct PFTauSelectorDefinition {
@@ -31,7 +33,7 @@ struct PFTauSelectorDefinition {
     std::vector<edm::ParameterSet> discriminators =
       cfg.getParameter<std::vector<edm::ParameterSet> >("discriminators");
     // Build each of our cuts
-    for(auto const& pset : discriminators) {
+    BOOST_FOREACH(const edm::ParameterSet &pset, discriminators) {
       DiscCutPair newCut;
       newCut.inputToken = iC.consumes<reco::PFTauDiscriminator>(pset.getParameter<edm::InputTag>("discriminator"));
       newCut.cut = pset.getParameter<double>("selectionCut");
@@ -59,7 +61,7 @@ struct PFTauSelectorDefinition {
     }
 
     // Load each discriminator
-    for(auto& disc : discriminators_) {
+    BOOST_FOREACH(DiscCutPair &disc, discriminators_) {
       e.getByToken(disc.inputToken, disc.handle);
     }
 
@@ -68,7 +70,7 @@ struct PFTauSelectorDefinition {
       bool passed = true;
       reco::PFTauRef tau(hc, iTau);
       // Check if it passed all the discrimiantors
-      for(auto const& disc : discriminators_) {
+      BOOST_FOREACH(const DiscCutPair &disc, discriminators_) {
         // Check this discriminator passes
         if (!((*disc.handle)[tau] > disc.cut)) {
           passed = false;

@@ -48,27 +48,35 @@ from L1Trigger.Configuration.L1TRawToDigi_cff import *
 
 from EventFilter.CTPPSRawToDigi.ctppsRawToDigi_cff import *
 
-RawToDigiTask = cms.Task(L1TRawToDigiTask,
-                         siPixelDigis,
-                         siStripDigis,
-                         ecalDigis,
-                         ecalPreshowerDigis,
-                         hcalDigis,
-                         muonCSCDigis,
-                         muonDTDigis,
-                         muonRPCDigis,
-                         castorDigis,
-                         scalersRawToDigi,
-                         tcdsDigis,
-                         onlineMetaDataDigis,
+RawToDigi = cms.Sequence(L1TRawToDigi
+                         +siPixelDigis
+                         +siStripDigis
+                         +ecalDigis
+                         +ecalPreshowerDigis
+                         +hcalDigis
+                         +muonCSCDigis
+                         +muonDTDigis
+                         +muonRPCDigis
+                         +castorDigis
+                         +scalersRawToDigi
+                         +tcdsDigis
+                         +onlineMetaDataDigis
                          )
-RawToDigi = cms.Sequence(RawToDigiTask)
 
-RawToDigiTask_noTk = RawToDigiTask.copyAndExclude([siPixelDigis, siStripDigis])
-RawToDigi_noTk = cms.Sequence(RawToDigiTask_noTk)
+RawToDigi_noTk = cms.Sequence(L1TRawToDigi
+                              +ecalDigis
+                              +ecalPreshowerDigis
+                              +hcalDigis
+                              +muonCSCDigis
+                              +muonDTDigis
+                              +muonRPCDigis
+                              +castorDigis
+                              +scalersRawToDigi
+                              +tcdsDigis
+                              +onlineMetaDataDigis
+                              )
 
-RawToDigiTask_pixelOnly = cms.Task(siPixelDigis)
-RawToDigi_pixelOnly = cms.Sequence(RawToDigiTask_pixelOnly)
+RawToDigi_pixelOnly = cms.Sequence(siPixelDigis)
 
 scalersRawToDigi.scalersInputTag = 'rawDataCollector'
 siPixelDigis.InputLabel = 'rawDataCollector'
@@ -82,56 +90,56 @@ muonRPCDigis.InputLabel = 'rawDataCollector'
 castorDigis.InputLabel = 'rawDataCollector'
 
 from Configuration.Eras.Modifier_run3_common_cff import run3_common
-run3_common.toReplaceWith(RawToDigiTask, RawToDigiTask.copyAndExclude([castorDigis]))
+run3_common.toReplaceWith(RawToDigi, RawToDigi.copyAndExclude([castorDigis]))
 
 from Configuration.Eras.Modifier_phase2_tracker_cff import phase2_tracker
 # Remove siPixelDigis until we have phase1 pixel digis
-phase2_tracker.toReplaceWith(RawToDigiTask, RawToDigiTask.copyAndExclude([siPixelDigis])) # FIXME
+phase2_tracker.toReplaceWith(RawToDigi, RawToDigi.copyAndExclude([siPixelDigis])) # FIXME
 
 
 # add CTPPS 2016 raw-to-digi modules
 from Configuration.Eras.Modifier_ctpps_2016_cff import ctpps_2016
 
-_ctpps_2016_RawToDigiTask = RawToDigiTask.copy()
-_ctpps_2016_RawToDigiTask.add(ctppsRawToDigiTask)
-ctpps_2016.toReplaceWith(RawToDigiTask, _ctpps_2016_RawToDigiTask)
+_ctpps_2016_RawToDigi = RawToDigi.copy()
+_ctpps_2016_RawToDigi += ctppsRawToDigi
+ctpps_2016.toReplaceWith(RawToDigi, _ctpps_2016_RawToDigi)
 
-_ctpps_2016_RawToDigiTask_noTk = RawToDigiTask_noTk.copy()
-_ctpps_2016_RawToDigiTask_noTk.add(ctppsRawToDigiTask)
-ctpps_2016.toReplaceWith(RawToDigiTask_noTk, _ctpps_2016_RawToDigiTask_noTk)
+_ctpps_2016_RawToDigi_noTk = RawToDigi_noTk.copy()
+_ctpps_2016_RawToDigi_noTk += ctppsRawToDigi
+ctpps_2016.toReplaceWith(RawToDigi_noTk, _ctpps_2016_RawToDigi_noTk)
 
 # GEM settings
-_gem_RawToDigiTask = RawToDigiTask.copy()
-_gem_RawToDigiTask.add(muonGEMDigis)
+_gem_RawToDigi = RawToDigi.copy()
+_gem_RawToDigi.insert(-1,muonGEMDigis)
 
 from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
-run2_GEM_2017.toReplaceWith(RawToDigiTask, _gem_RawToDigiTask)
+run2_GEM_2017.toReplaceWith(RawToDigi, _gem_RawToDigi)
 
 from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
-run3_GEM.toReplaceWith(RawToDigiTask, _gem_RawToDigiTask)
+run3_GEM.toReplaceWith(RawToDigi, _gem_RawToDigi)
 
 from EventFilter.HGCalRawToDigi.HGCalRawToDigi_cfi import *
-_hgcal_RawToDigiTask = RawToDigiTask.copy()
-_hgcal_RawToDigiTask.add(hgcalDigis)
+_hgcal_RawToDigi = RawToDigi.copy()
+_hgcal_RawToDigi += hgcalDigis
 from Configuration.Eras.Modifier_phase2_hgcal_cff import phase2_hgcal
-phase2_hgcal.toReplaceWith(RawToDigiTask,_hgcal_RawToDigiTask)
+phase2_hgcal.toReplaceWith(RawToDigi,_hgcal_RawToDigi)
 
 # RPC New Readout Validation
 from Configuration.Eras.Modifier_stage2L1Trigger_2017_cff import stage2L1Trigger_2017
-_rpc_NewReadoutVal_RawToDigiTask = RawToDigiTask.copy()
-_rpc_NewReadoutVal_RawToDigiTask_noTk = RawToDigiTask_noTk.copy()
-_rpc_NewReadoutVal_RawToDigiTask.add(muonRPCNewDigis)
-_rpc_NewReadoutVal_RawToDigiTask_noTk.add(muonRPCNewDigis)
-stage2L1Trigger_2017.toReplaceWith(RawToDigiTask, _rpc_NewReadoutVal_RawToDigiTask)
-stage2L1Trigger_2017.toReplaceWith(RawToDigiTask_noTk, _rpc_NewReadoutVal_RawToDigiTask)
+_rpc_NewReadoutVal_RawToDigi = RawToDigi.copy()
+_rpc_NewReadoutVal_RawToDigi_noTk = RawToDigi_noTk.copy()
+_rpc_NewReadoutVal_RawToDigi += muonRPCNewDigis
+_rpc_NewReadoutVal_RawToDigi_noTk += muonRPCNewDigis
+stage2L1Trigger_2017.toReplaceWith(RawToDigi, _rpc_NewReadoutVal_RawToDigi)
+stage2L1Trigger_2017.toReplaceWith(RawToDigi_noTk, _rpc_NewReadoutVal_RawToDigi)
 
 from Configuration.Eras.Modifier_fastSim_cff import fastSim
-fastSim.toReplaceWith(RawToDigiTask, RawToDigiTask.copyAndExclude([muonRPCNewDigis]))
-fastSim.toReplaceWith(RawToDigiTask_noTk, RawToDigiTask_noTk.copyAndExclude([muonRPCNewDigis]))
+fastSim.toReplaceWith(RawToDigi, RawToDigi.copyAndExclude([muonRPCNewDigis]))
+fastSim.toReplaceWith(RawToDigi_noTk, RawToDigi_noTk.copyAndExclude([muonRPCNewDigis]))
 
-_hfnose_RawToDigiTask = RawToDigiTask.copy()
-_hfnose_RawToDigiTask.add(hfnoseDigis)
+_hfnose_RawToDigi = RawToDigi.copy()
+_hfnose_RawToDigi += hfnoseDigis
 
 from Configuration.Eras.Modifier_phase2_hfnose_cff import phase2_hfnose
-phase2_hfnose.toReplaceWith(RawToDigiTask,_hfnose_RawToDigiTask)
+phase2_hfnose.toReplaceWith(RawToDigi,_hfnose_RawToDigi)
 

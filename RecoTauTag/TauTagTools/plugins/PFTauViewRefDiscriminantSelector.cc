@@ -11,6 +11,7 @@
  *
  */
 
+#include <boost/foreach.hpp>
 #include <memory>
 
 #include "FWCore/Framework/interface/EDFilter.h"
@@ -88,7 +89,7 @@ bool RecoTauDiscriminatorRefSelectorImpl<T>::filter(edm::Event& evt,
   //auto output = std::make_unique<OutputType>(inputRefs.id());
   auto output = std::make_unique<OutputType>();
 
-  for(const auto& ref : inputRefs) {
+  BOOST_FOREACH(reco::PFTauRef ref, inputRefs) {
     if ( (*disc)[ref] > cut_ )
       output->push_back(T::make(ref));
   }

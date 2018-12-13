@@ -13,7 +13,10 @@
  *  @date   2008-10-29
  */
 class TTUBasicConfig : public TTUConfiguration {
-public:
+public: 
+  /// Standard constructor
+  TTUBasicConfig( ) { };
+
   TTUBasicConfig( const char * );
   
   TTUBasicConfig( const TTUBoardSpecs * );

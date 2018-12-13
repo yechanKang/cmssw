@@ -35,6 +35,14 @@ protected:
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
   void analyze(const edm::Event& e, const edm::EventSetup& c) override ;
 
+  void beginLuminosityBlock(const edm::LuminosityBlock& lumiSeg, 
+                            const edm::EventSetup& context) override { }
+
+  void endLuminosityBlock(const edm::LuminosityBlock& lumiSeg, 
+                          const edm::EventSetup& c) override { }
+
+  void endRun(const edm::Run& r, const edm::EventSetup& c) override { }
+
 private:
       
   //                        

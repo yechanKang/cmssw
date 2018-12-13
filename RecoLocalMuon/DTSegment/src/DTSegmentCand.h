@@ -132,7 +132,8 @@ class DTSegmentCand{
     /// convert this DTSegmentCand into a DTChamberRecSegment2D
     operator DTChamberRecSegment2D*() const;
 
-    struct AssPointLessZ {
+    struct AssPointLessZ : 
+      public std::binary_function<const AssPoint&, const AssPoint&, bool> {
         public:
           bool operator()(const AssPoint& pt1, 
                           const AssPoint& pt2) const ; 

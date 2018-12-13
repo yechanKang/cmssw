@@ -19,7 +19,8 @@ def appendCSCChamberMaskerAtUnpacking(process):
         process.muonCSCDigis.alctDigiTag = cms.InputTag("preCSCDigis", "MuonCSCALCTDigi") 
         process.muonCSCDigis.clctDigiTag = cms.InputTag("preCSCDigis", "MuonCSCCLCTDigi") 
 
-        process.RawToDigiTask.add(process.preCSCDigis)
+        process.filteredCscDigiSequence = cms.Sequence(process.preCSCDigis + process.muonCSCDigis)
+        process.RawToDigi.replace(process.muonCSCDigis, process.filteredCscDigiSequence)
 
         if hasattr(process,"RandomNumberGeneratorService") :
             process.RandomNumberGeneratorService.muonCSCDigis = cms.PSet(

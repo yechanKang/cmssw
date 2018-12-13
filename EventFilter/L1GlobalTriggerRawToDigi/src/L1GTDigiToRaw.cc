@@ -90,8 +90,24 @@ L1GTDigiToRaw::L1GTDigiToRaw(const edm::ParameterSet& pSet) :
 
 }
 
+// destructor
+L1GTDigiToRaw::~L1GTDigiToRaw()
+{
+
+    // empty now
+
+}
 
 // member functions
+
+// beginning of job stuff
+void L1GTDigiToRaw::beginJob()
+{
+
+    // empty now
+
+}
+
 
 // method called to produce the data
 void L1GTDigiToRaw::produce(edm::Event& iEvent, const edm::EventSetup& evSetup)
@@ -864,6 +880,14 @@ void L1GTDigiToRaw::packTrailer(unsigned char* ptrGt, unsigned char* ptrGtBegin,
     FEDTrailer gtFEDTrailer(ptrGt);
     gtFEDTrailer.set(ptrGt, lengthVal, crcVal, evtStatusVal, ttsBitsVal, moreTrailersVal);
 
+}
+
+
+//
+void L1GTDigiToRaw::endJob()
+{
+
+    // empty now
 }
 
 

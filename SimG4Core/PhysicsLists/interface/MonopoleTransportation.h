@@ -36,17 +36,22 @@
 #include "G4ParticleChangeForTransport.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include <memory>
-
 class G4SafetyHelper; 
 class Monopole;
 class CMSFieldManager;
+
+namespace sim {
+  class ChordFinderSetter;
+}
+
+#include <memory>
 
 class MonopoleTransportation : public G4VProcess 
 {
 public: 
 
-  MonopoleTransportation(const Monopole* p, G4int verbosityLevel= 1);
+  MonopoleTransportation(const Monopole* p, sim::ChordFinderSetter * cfs,
+                         G4int verbosityLevel= 1);
   ~MonopoleTransportation() override; 
 
   G4double AlongStepGetPhysicalInteractionLength(
@@ -95,16 +100,22 @@ public:
 
   inline G4double GetMaxEnergyKilled() const; 
   inline G4double GetSumEnergyKilled() const;
-  void ResetKilledStatistics( G4int report = 1);      
+  inline void ResetKilledStatistics( G4int report = 1);      
   // Statistics for tracks killed (currently due to looping in field)
 
   inline void EnableShortStepOptimisation(G4bool optimise=true); 
   // Whether short steps < safety will avoid to call Navigator (if field=0)
 
-  G4double AtRestGetPhysicalInteractionLength(const G4Track&,
-                                              G4ForceCondition*) override;
+  G4double AtRestGetPhysicalInteractionLength(
+                             const G4Track& ,
+                             G4ForceCondition* 
+                            ) override { return -1.0; };
+  // No operation in  AtRestDoIt.
 
-  G4VParticleChange* AtRestDoIt(const G4Track&, const G4Step&) override;
+  G4VParticleChange* AtRestDoIt(
+                             const G4Track& ,
+                             const G4Step&
+                            ) override {return nullptr;};
   // No operation in  AtRestDoIt.
 
   void StartTracking(G4Track* aTrack) override;
@@ -119,6 +130,7 @@ private:
 
   const Monopole* fParticleDef;
   
+  sim::ChordFinderSetter *fChordFinderSetter;;
   CMSFieldManager*     fieldMgrCMS;
     
   G4Navigator*         fLinearNavigator;
@@ -187,8 +199,11 @@ inline G4PropagatorInField* MonopoleTransportation::GetPropagatorInField()
 
 inline G4bool MonopoleTransportation::DoesGlobalFieldExist()
 {
-  G4TransportationManager* transportMgr = 
-    G4TransportationManager::GetTransportationManager();
+  G4TransportationManager* transportMgr;
+  transportMgr= G4TransportationManager::GetTransportationManager();
+
+  // fFieldExists= transportMgr->GetFieldManager()->DoesFieldExist();
+  // return fFieldExists;
   return transportMgr->GetFieldManager()->DoesFieldExist();
 }
 
@@ -222,7 +237,7 @@ inline void MonopoleTransportation::SetThresholdTrials(G4int newMaxTrials )
   fThresholdTrials = newMaxTrials; 
 }
 
-// Get parameters for killing loopers: 
+// Get/Set parameters for killing loopers: 
 //   Above 'important' energy a 'looping' particle in field will 
 //   *NOT* be abandoned, except after fThresholdTrials attempts.
 // Below Warning energy, no verbosity for looping particles is issued
@@ -236,6 +251,19 @@ inline G4double MonopoleTransportation::GetSumEnergyKilled() const
 {
   return fSumEnergyKilled;
 }
+
+inline void MonopoleTransportation::ResetKilledStatistics(G4int report)
+{
+  if( report ) { 
+    G4cout << " MonopoleTransportation: Statistics for looping particles " << G4endl;
+    G4cout << "   Sum of energy of loopers killed: " <<  fSumEnergyKilled << G4endl;
+    G4cout << "   Max energy of loopers killed: " <<  fMaxEnergyKilled << G4endl;
+  } 
+
+  fSumEnergyKilled= 0;
+  fMaxEnergyKilled= -1.0*CLHEP::GeV;
+}
+// Statistics for tracks killed (currently due to looping in field)
 
 inline void 
 MonopoleTransportation::EnableShortStepOptimisation(G4bool optimiseShortStep)

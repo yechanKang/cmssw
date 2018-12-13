@@ -15,6 +15,7 @@ ntuple_event = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleEvent')
 )
 
+
 from FastSimulation.Event.ParticleFilter_cfi import ParticleFilterBlock
 PartFilterConfig = ParticleFilterBlock.ParticleFilter.copy()
 PartFilterConfig.protonEMin = cms.double(100000)
@@ -54,8 +55,8 @@ ntuple_digis = cms.PSet(
 
 ntuple_triggercells = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleHGCTriggerCells'),
-    TriggerCells = cms.InputTag('hgcalConcentratorProducer:HGCalConcentratorProcessorSelection'),
-    Multiclusters = cms.InputTag('hgcalBackEndLayer2Producer:HGCalBackendLayer2Processor3DClustering'),
+    TriggerCells = cms.InputTag('hgcalTriggerPrimitiveDigiProducer:calibratedTriggerCells'),
+    Multiclusters = cms.InputTag('hgcalTriggerPrimitiveDigiProducer:cluster3D'),
     eeSimHits = cms.InputTag('g4SimHits:HGCHitsEE'),
     fhSimHits = cms.InputTag('g4SimHits:HGCHitsHEfront'),
     bhSimHits = cms.InputTag('g4SimHits:HcalHits'),
@@ -69,26 +70,26 @@ ntuple_triggercells = cms.PSet(
 
 ntuple_clusters = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleHGCClusters'),
-    Clusters = cms.InputTag('hgcalBackEndLayer1Producer:HGCalBackendLayer1Processor2DClustering'),
-    Multiclusters = cms.InputTag('hgcalBackEndLayer2Producer:HGCalBackendLayer2Processor3DClustering'),
+    Clusters = cms.InputTag('hgcalTriggerPrimitiveDigiProducer:cluster2D'),
+    Multiclusters = cms.InputTag('hgcalTriggerPrimitiveDigiProducer:cluster3D'),
     FilterClustersInMulticlusters = cms.bool(False)
 )
 
 from L1Trigger.L1THGCal.egammaIdentification import egamma_identification_drnn_cone
 ntuple_multicluster = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleHGCMulticlusters'),
-    Multiclusters = cms.InputTag('hgcalBackEndLayer2Producer:HGCalBackendLayer2Processor3DClustering'),
+    Multiclusters = cms.InputTag('hgcalTriggerPrimitiveDigiProducer:cluster3D'),
     EGIdentification = egamma_identification_drnn_cone.clone()
 )
 
 ntuple_panels = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleHGCPanels'),
-    TriggerCells = cms.InputTag('hgcalConcentratorProducer:HGCalConcentratorProcessorSelection')
+    TriggerCells = cms.InputTag('hgcalTriggerPrimitiveDigiProducer:calibratedTriggerCells')
 )
 
 ntuple_tower = cms.PSet(
     NtupleName = cms.string('HGCalTriggerNtupleHGCTowers'),
-    Towers = cms.InputTag('hgcalTowerProducer:HGCalTowerProcessor')
+    Towers = cms.InputTag('hgcalTriggerPrimitiveDigiProducer:tower')
 )
 
 hgcalTriggerNtuplizer = cms.EDAnalyzer(

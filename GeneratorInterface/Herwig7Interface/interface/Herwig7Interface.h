@@ -43,7 +43,7 @@ namespace CLHEP {
 class Herwig7Interface {
     public:
 	Herwig7Interface(const edm::ParameterSet &params);
-	~Herwig7Interface() noexcept;
+	~Herwig7Interface();
 
         void setPEGRandomEngine(CLHEP::HepRandomEngine*);
 
@@ -91,7 +91,6 @@ class Herwig7Interface {
 	// File name containing Herwig input config 
 	std::string				dumpConfig_;
 	const unsigned int			skipEvents_;
-    CLHEP::HepRandomEngine* randomEngine;
 };
 
 

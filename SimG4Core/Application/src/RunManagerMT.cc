@@ -18,6 +18,7 @@
 
 #include "SimG4Core/Watcher/interface/SimWatcherFactory.h"
 #include "SimG4Core/MagneticField/interface/FieldBuilder.h"
+#include "SimG4Core/MagneticField/interface/ChordFinderSetter.h"
 #include "SimG4Core/MagneticField/interface/Field.h"
 #include "SimG4Core/MagneticField/interface/CMSFieldManager.h"
 
@@ -83,6 +84,7 @@ RunManagerMT::RunManagerMT(edm::ParameterSet const & p):
 
   m_runInterface.reset(nullptr);
   m_prodCuts.reset(nullptr);
+  m_chordFinderSetter.reset(nullptr);
   m_userRunAction = nullptr;
   m_currentRun = nullptr;
 
@@ -153,7 +155,7 @@ void RunManagerMT::initG4(const DDCompactView *pDD, const MagneticField *pMF,
   // exotic particle physics
   double monopoleMass = m_pPhysics.getUntrackedParameter<double>("MonopoleMass",0);
   if(monopoleMass > 0.0) {
-    phys->RegisterPhysics(new CMSMonopolePhysics(fPDGTable,m_pPhysics));
+    phys->RegisterPhysics(new CMSMonopolePhysics(fPDGTable,m_chordFinderSetter.get(),m_pPhysics));
   }
   bool exotica = m_pPhysics.getUntrackedParameter<bool>("ExoticaTransport",false);
   if(exotica) { CMSExoticaPhysics exo(phys, m_pPhysics); }

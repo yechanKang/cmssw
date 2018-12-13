@@ -137,8 +137,10 @@ class PFEGammaAlgo {
   }
 
   void RunPFEG(const pfEGHelpers::HeavyObjectCache* hoc,
-               const reco::PFBlockRef&  blockRef);
-  
+               const reco::PFBlockRef&  blockRef,
+               std::vector< bool >& active
+               );
+               
   //get PFCandidate collection
   reco::PFCandidateCollection& getCandidates() {return outcands_;}
 

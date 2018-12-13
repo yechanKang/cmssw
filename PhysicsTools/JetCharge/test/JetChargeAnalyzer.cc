@@ -22,7 +22,8 @@
 
 class JetChargeAnalyzer : public edm::EDAnalyzer {
     public:
-  struct JetRefCompare {
+  struct JetRefCompare :
+       public std::binary_function<edm::RefToBase<reco::Jet>, edm::RefToBase<reco::Jet>, bool> {
     inline bool operator () (const edm::RefToBase<reco::Jet> &j1,
                              const edm::RefToBase<reco::Jet> &j2) const
     { return j1.id() < j2.id() || (j1.id() == j2.id() && j1.key() < j2.key()); }

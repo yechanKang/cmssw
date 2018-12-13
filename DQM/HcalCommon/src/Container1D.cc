@@ -64,7 +64,7 @@ namespace hcaldqm
 
   /* virtual */ void Container1D::reset()
   {
-    for(auto const& pair : _mes)
+    BOOST_FOREACH(MEMap::value_type &pair, _mes)
       {
         pair.second->Reset();
       }
@@ -73,7 +73,7 @@ namespace hcaldqm
   /* virtual */ void Container1D::print()
   {
     std::cout << "Container by " << _hashmap.getHashTypeName() << std::endl;
-    for(auto const& pair : _mes)
+    BOOST_FOREACH(MEMap::value_type &pair, _mes)
       {
         std::cout << std::hex << pair.first << std::dec << std::endl;
       }
@@ -983,7 +983,7 @@ namespace hcaldqm
       return;
 
     //  inflate all the mes
-    for(auto const& pair : _mes)
+    BOOST_FOREACH(MEMap::value_type &pair, _mes)
       {
         int x=_qx->nbins();
         while (l>=x)
@@ -997,7 +997,7 @@ namespace hcaldqm
 
   /* virtual */ void Container1D::setLumiFlag()
   {
-    for(auto const& pair : _mes)
+    BOOST_FOREACH(MEMap::value_type &pair, _mes)
       {
         pair.second->setLumiFlag();
       }

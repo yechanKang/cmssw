@@ -1106,7 +1106,6 @@ class ConfigBuilder(object):
             self.RECODefaultCFF= 'FastSimulation.Configuration.Reconstruction_AftMix_cff'
             self.RECOBEFMIXDefaultCFF = 'FastSimulation.Configuration.Reconstruction_BefMix_cff'
             self.RECOBEFMIXDefaultSeq = 'reconstruction_befmix'
-            self.NANODefaultSeq = 'nanoSequenceFS'
             self.DQMOFFLINEDefaultCFF="FastSimulation.Configuration.DQMOfflineMC_cff"
 
         # Mixing
@@ -1208,11 +1207,7 @@ class ConfigBuilder(object):
                     setattr(self.process,prefix,getattr(cms,what)( getattr(self.process, s) ))
                 else:
                     p=getattr(self.process,prefix)
-                    tmp = getattr(self.process, s)
-                    if isinstance(tmp, cms.Task):
-                        p.associate(tmp)
-                    else:
-                        p+=tmp
+                    p+=getattr(self.process, s)
             self.schedule.append(getattr(self.process,prefix))
             return
         else:

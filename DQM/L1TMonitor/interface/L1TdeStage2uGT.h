@@ -32,6 +32,7 @@
 #include "L1Trigger/L1TGlobal/interface/L1TGlobalUtil.h"
 
 #include "FWCore/Utilities/interface/RegexMatch.h"
+#include <boost/foreach.hpp>
 
 using namespace l1t;
 

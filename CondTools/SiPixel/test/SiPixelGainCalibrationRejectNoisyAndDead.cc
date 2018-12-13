@@ -297,6 +297,8 @@ void SiPixelGainCalibrationRejectNoisyAndDead::fillDatabase(const edm::EventSetu
     
     if(DEBUG) cout<<"=>=>=>=> Loop over rows/cols is finished"<<endl;
     
+    SiPixelGainCalibrationOffline::Range offlinerange;
+    SiPixelGainCalibrationOffline::Range hltrange;
     if(record_=="SiPixelGainCalibrationOfflineRcd"){
       SiPixelGainCalibrationOffline::Range offlinerange(theSiPixelGainCalibrationGainPerColPedPerPixel.begin(),theSiPixelGainCalibrationGainPerColPedPerPixel.end());
       if( !theGainCalibrationDbInputOffline_->put(detid,offlinerange,ncols) )

@@ -14,11 +14,13 @@
 class RBCBasicConfig : public RBCConfiguration {
 public: 
   /// Standard constructor
-  RBCBasicConfig( ):m_debug{false} {}; 
+  RBCBasicConfig( ) {}; 
   
   RBCBasicConfig( const char *); 
 
   RBCBasicConfig( const RBCBoardSpecs * , RBCId * );
+  
+  ~RBCBasicConfig( ) override; ///< Destructor
   
   bool initialise() override;
 
@@ -28,6 +30,8 @@ protected:
   
 private:
   
+  RBCId * m_rbcinfo;
+
   std::vector<int> m_vecmask;
   std::vector<int> m_vecforce;
 

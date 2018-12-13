@@ -51,6 +51,8 @@
 #include "CondFormats/DataRecord/interface/RPCEMapRcd.h"
 
 
+#include <boost/foreach.hpp>
+
 #include <fstream>
 #include <bitset>
 
@@ -632,14 +634,14 @@ void WriteVHDL::prepareEncdap4thPlaneConnections(edm::ESHandle<RPCGeometry> rpcG
   } // roll iter
 
   /*
-  for(auto const& t : m_tbInputs )
+  BOOST_FOREACH( TBInputsMap::value_type t, m_tbInputs )
   {
     std::cout 
         << "TB" << t.first.tbNum
         << " SEC" <<  t.first.sector
         << std::endl
         << "      ";
-    for(auto const& input : t.second ){
+    BOOST_FOREACH( TBInputsMap::mapped_type::key_type  input, t.second ){
       std::cout << " " << input; 
     }
     std::cout << std::endl;

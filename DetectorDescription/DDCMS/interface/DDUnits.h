@@ -22,11 +22,6 @@ constexpr long double operator"" _mm( long double length )
     return length*1.;
 }
 
-constexpr long double operator"" _cm( long double length )
-{
-  return length*10.;
-}
-
 constexpr long double operator "" _pi( long double x ) 
 { return x * _pi; }
 

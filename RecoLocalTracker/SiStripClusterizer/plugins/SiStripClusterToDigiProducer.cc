@@ -14,6 +14,7 @@
 #include "CalibTracker/Records/interface/SiStripDependentRecords.h"
 
 #include "DataFormats/SiStripCluster/interface/SiStripCluster.h"
+#include "boost/foreach.hpp"
 #include <numeric>
 
 class SiStripClusterToDigiProducer : public edm::stream::EDProducer<>  {

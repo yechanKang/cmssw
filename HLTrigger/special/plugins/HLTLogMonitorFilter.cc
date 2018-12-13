@@ -110,6 +110,7 @@ public:
 #include <sstream>
 #include <iomanip>
 #include <memory>
+#include <boost/foreach.hpp>
 #include <boost/range.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -150,7 +151,7 @@ bool HLTLogMonitorFilter::filter(edm::Event & event, const edm::EventSetup & set
     return false;
 
   // clear "done" flag in all Categories
-  for(auto& entry : m_data)
+  BOOST_FOREACH(CategoryMap::value_type & entry, m_data)
     entry.second.done = false;
 
   // look at the LogErrors and LogWarnings, and accept the event if at least one is under threshold or matches the prescale
@@ -224,7 +225,7 @@ void HLTLogMonitorFilter::summary() {
   std::stringstream out;
   out << "Log-Report ---------- HLTLogMonitorFilter Summary ------------\n"
       << "Log-Report  Threshold   Prescale     Issued   Accepted   Rejected Category\n";
-  for(auto const& entry : m_data) {
+  BOOST_FOREACH(const CategoryMap::value_type & entry, m_data) {
     out << "Log-Report "
         << std::right
         << std::setw(10) << entry.second.threshold << ' '

@@ -79,7 +79,7 @@ namespace hcaldqm
   template<typename STDTYPE>
   ContainerXXX<STDTYPE>::ContainerXXX(ContainerXXX const& x)
   {
-    for(auto& p : _cmap)
+    BOOST_FOREACH(typename CompactMap::value_type &p, _cmap)
       {
         _cmap.insert(std::make_pair(p.first, p.second));
       }
@@ -321,7 +321,7 @@ namespace hcaldqm
   template<typename STDTYPE>
   void ContainerXXX<STDTYPE>::dump(Container1D* c)
   {
-    for(auto& p : _cmap)
+    BOOST_FOREACH(typename CompactMap::value_type &p, _cmap)
       {
         STDTYPE &x = p.second;
         uint32_t hash = p.first;
@@ -332,7 +332,7 @@ namespace hcaldqm
   template<typename STDTYPE>
   void ContainerXXX<STDTYPE>::dump(std::vector<Container1D*> const &vc)
   {
-    for(auto& p : _cmap)
+    BOOST_FOREACH(typename CompactMap::value_type &p, _cmap)
       {
         STDTYPE &x = p.second;
         uint32_t hash = p.first;
@@ -347,7 +347,7 @@ namespace hcaldqm
   void ContainerXXX<STDTYPE>::print()
   {
     std::cout << "Container by " << _hashmap.getHashTypeName() << std::endl;
-    for(auto& p : _cmap)
+    BOOST_FOREACH(typename CompactMap::value_type &p, _cmap)
       {
         if (_hashmap.isDHash())
           std::cout << HcalDetId(p.first) << p.second << std::endl;
@@ -363,7 +363,7 @@ namespace hcaldqm
   template<typename STDTYPE>
   void ContainerXXX<STDTYPE>::reset()
   {
-    for(auto& p : _cmap)
+    BOOST_FOREACH(typename CompactMap::value_type &p, _cmap)
       {
         p.second = 0;
       }
@@ -372,7 +372,7 @@ namespace hcaldqm
   template<typename STDTYPE>
   void ContainerXXX<STDTYPE>::load(Container1D* cont)
   {
-    for(auto& p : _cmap)
+    BOOST_FOREACH(typename CompactMap::value_type &p, _cmap)
       {
         STDTYPE &x = p.second;
         uint32_t hash = p.first;

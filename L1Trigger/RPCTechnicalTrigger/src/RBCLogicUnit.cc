@@ -14,29 +14,44 @@
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-RBCLogicUnit::RBCLogicUnit( ) : RPCLogicUnit(),
-                                m_debug{false}
-{
+RBCLogicUnit::RBCLogicUnit( ) : RPCLogicUnit() {
+  
+  m_logtool = new LogicTool<RBCLogic>();
+  m_debug = false;
+  
 }
 
-RBCLogicUnit::RBCLogicUnit( const char * logic_type ) : RPCLogicUnit(),
-  m_logtype{ logic_type },
-  m_debug{ false }
-{
+RBCLogicUnit::RBCLogicUnit( const char * logic_type ) : RPCLogicUnit() {
+  
+  m_logtool = new LogicTool<RBCLogic>();
+  m_logtype = std::string( logic_type );
+  m_debug = false;
+
 }
 //=============================================================================
 // Destructor
 //=============================================================================
 RBCLogicUnit::~RBCLogicUnit() {
+  
+  if (m_logtool) {
+    if ( m_logtool->endjob() )
+      delete m_logtool;
+  }
+  
 } 
 
 //=============================================================================
 bool RBCLogicUnit::initialise() 
 {
   
-  LogicTool<RBCLogic> logtool;
-
-  m_logic  = logtool.retrieve(m_logtype);
+  bool status(false);
+  
+  status = m_logtool->initialise();
+  if ( !status ) { 
+    if( m_debug ) std::cout << "RBCLogicUnit> Problem initialising LogicTool \n"; 
+    return false; };
+  
+  m_logic  = dynamic_cast<RBCLogic*> ( m_logtool->retrieve(m_logtype) );
   
   if ( ! m_logic ) { 
     if( m_debug ) std::cout << "RBCLogicUnit> No logic found \n"; 
@@ -64,4 +79,5 @@ void RBCLogicUnit::run( const RBCInput & _input , std::bitset<2> & _decision )
   m_logic->process( _input , _decision );
   m_layersignal[0] = m_logic->getlayersignal( 0 );
   m_layersignal[1] = m_logic->getlayersignal( 1 );
+  
 }

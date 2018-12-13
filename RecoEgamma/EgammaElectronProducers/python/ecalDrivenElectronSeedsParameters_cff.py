@@ -1,14 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
-from RecoTracker.IterativeTracking.ElectronSeeds_cff import newCombinedSeeds as _newCombinedSeeds
-
 ecalDrivenElectronSeedsParameters = cms.PSet(
 
     # steering
     fromTrackerSeeds = cms.bool(True),
-    initialSeeds = cms.InputTag(""),
-    #skip newCombinedSeeds if it is a trivial seed merger
-    initialSeedsVector = _newCombinedSeeds.seedCollections,
+    initialSeeds = cms.InputTag("newCombinedSeeds"),
     preFilteredSeeds = cms.bool(False),
     useRecoVertex = cms.bool(False),
     vertices = cms.InputTag("offlinePrimaryVerticesWithBS"),

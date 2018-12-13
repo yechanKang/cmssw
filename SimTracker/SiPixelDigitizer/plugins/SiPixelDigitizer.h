@@ -62,10 +62,10 @@ namespace cms {
 					 std::vector<int> &bunchCrossingList,
 					 std::vector<float> &TrueInteractionList, 
 					 std::vector<edm::EventID> &eventInfoList, int bunchSpacing) override{
-      PileupInfo_ = std::make_unique<PileupMixingContent>(numInteractionList, bunchCrossingList, TrueInteractionList, eventInfoList, bunchSpacing);
+      PileupInfo_ = new PileupMixingContent(numInteractionList, bunchCrossingList, TrueInteractionList, eventInfoList, bunchSpacing);
     }
 
-    PileupMixingContent* getEventPileupInfo() override { return PileupInfo_.get(); }
+    PileupMixingContent* getEventPileupInfo() override { return PileupInfo_; }
 
   private:
     void accumulatePixelHits(edm::Handle<std::vector<PSimHit> >,
@@ -95,7 +95,7 @@ namespace cms {
     std::map<unsigned int, PixelGeomDetUnit const *> detectorUnits;
     CLHEP::HepRandomEngine* randomEngine_ = nullptr;
 
-    std::unique_ptr<PileupMixingContent> PileupInfo_;
+    PileupMixingContent* PileupInfo_;
     
     const bool pilotBlades; // Default = false
     const int NumberOfEndcapDisks; // Default = 2

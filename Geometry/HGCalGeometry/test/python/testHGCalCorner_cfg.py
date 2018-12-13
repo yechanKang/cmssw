@@ -43,7 +43,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.prodEE = cms.EDAnalyzer("HGCalGeometryCornerTester",
                                 detector   = cms.string("HGCalEESensitive"),
-                                cornerType = cms.int32(0)
+                                cornerType = cms.int32(1)
                                 )
 
 process.prodHEF = process.prodEE.clone(

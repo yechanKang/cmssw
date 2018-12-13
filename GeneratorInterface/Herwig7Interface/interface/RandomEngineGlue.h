@@ -13,7 +13,6 @@
 #include <ThePEG/Repository/StandardRandom.h>
 
 #include "GeneratorInterface/Herwig7Interface/interface/Proxy.h"
-#include "CLHEP/Random/RandomEngine.h"
 
 namespace CLHEP {
 	class HepRandomEngine;	// forward declaration
@@ -27,7 +26,7 @@ class RandomEngineGlue : public RandomGenerator {
 	~RandomEngineGlue() override;
 
 	void setRandomEngine(CLHEP::HepRandomEngine* v) { randomEngine = v; }
-    CLHEP::HepRandomEngine* getRandomEngine() const { return randomEngine; }
+
 	void flush();
 
 	static void Init();

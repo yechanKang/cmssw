@@ -16,23 +16,42 @@
 //=============================================================================
 TTULogicUnit::TTULogicUnit( ) : RPCLogicUnit () {
   
+  m_logtool = new LogicTool<TTULogic>();
   m_debug = false;
   
 }
 
 TTULogicUnit::TTULogicUnit( const char * logic_type ) : RPCLogicUnit () {
 
+  m_logtool = new LogicTool<TTULogic>();
   m_logtype = std::string( logic_type );
   m_debug = false;
   
 }
+//=============================================================================
+// Destructor
+//=============================================================================
+TTULogicUnit::~TTULogicUnit() {
+  
+  if (m_logtool) {
+    if ( m_logtool->endjob() )
+      delete m_logtool;
+  }
+
+} 
 
 //=============================================================================
 bool TTULogicUnit::initialise() 
 {
   
-  LogicTool<TTULogic> logtool;
-  m_logic  = logtool.retrieve(m_logtype);
+  bool status(true);
+  
+  status = m_logtool->initialise();
+  if ( !status ) { 
+    if( m_debug ) std::cout << "TTULogicUnit> Problem initialising LogicTool \n"; 
+    return false; };
+
+  m_logic  = dynamic_cast<TTULogic*> ( m_logtool->retrieve(m_logtype) );
   
   if ( ! m_logic ) { 
     if( m_debug ) std::cout << "TTULogicUnit> No logic found \n"; 

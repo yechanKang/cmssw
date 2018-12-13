@@ -3,9 +3,6 @@
 
 #include "DD4hep/Detector.h"
 
-#include <string>
-#include <unordered_map>
-
 namespace cms  {
 
   class DDParsingContext {
@@ -15,29 +12,20 @@ namespace cms  {
     
     DDParsingContext( dd4hep::Detector* det )
       : description( det ) {
-      namespaces.emplace_back( "" );
-      rotations.reserve( 3000 );
-      shapes.reserve( 1000 );
-      volumes.reserve( 2000 );
+      namespaces.push_back("");
     }
 
-    ~DDParsingContext() {
-      rotations.clear();
-      shapes.clear();
-      volumes.clear();
-      numVectors.clear();
-    };
-    
+    ~DDParsingContext() = default;
     const std::string& ns() const { return namespaces.back(); }
     void addVector( const std::string& name, const VecDouble& value );
     
     dd4hep::Detector* description;
-    std::unordered_map< std::string, dd4hep::Rotation3D > rotations;
-    std::unordered_map< std::string, dd4hep::Solid > shapes;
-    std::unordered_map< std::string, dd4hep::Volume > volumes;
-    std::unordered_map< std::string, VecDouble > numVectors;
-    std::set< std::string > disabledAlgs;
-    std::vector< std::string > namespaces;
+    std::map<std::string, dd4hep::Rotation3D> rotations;
+    std::map<std::string, dd4hep::Solid> shapes;
+    std::map<std::string, dd4hep::Volume> volumes;
+    std::map<std::string, VecDouble > numVectors;
+    std::set<std::string> disabledAlgs;
+    std::vector<std::string> namespaces;
 
     bool geo_inited = false;
     
@@ -52,7 +40,6 @@ namespace cms  {
     bool debug_namespaces   = false;
     bool debug_visattr      = false;
     bool debug_algorithms   = false;
-    bool debug_specpars     = false;
   };
 }
 

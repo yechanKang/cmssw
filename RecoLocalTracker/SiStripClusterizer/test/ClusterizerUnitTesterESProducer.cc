@@ -1,23 +1,19 @@
 #include "RecoLocalTracker/SiStripClusterizer/test/ClusterizerUnitTesterESProducer.h"
 
 ClusterizerUnitTesterESProducer::
-ClusterizerUnitTesterESProducer(const edm::ParameterSet& conf)
+ClusterizerUnitTesterESProducer(const edm::ParameterSet& conf) :
+  apvGain(new SiStripApvGain()),
+  noises(new SiStripNoises())
 {
   edm::FileInPath testInfo(("RecoLocalTracker/SiStripClusterizer/test/ClusterizerUnitTestDetInfo.dat"));
-  auto quality = std::make_unique<SiStripQuality>(testInfo);
-  auto apvGain = std::make_unique<SiStripApvGain>();
-  auto noises = std::make_unique<SiStripNoises>();
+  quality = std::make_shared<SiStripQuality>(testInfo);
 
-  extractNoiseGainQuality(conf, quality.get(), apvGain.get(), noises.get());
+  extractNoiseGainQuality(conf);
 
-  gain_ = std::make_shared<const SiStripGain>(*apvGain,1);
+  gain = std::make_shared<SiStripGain>(*apvGain,1);
 
   quality->cleanUp();
   quality->fillBadComponents();
-
-  quality_ = std::move(quality);
-  apvGain_ = std::move(apvGain);
-  noises_ = std::move(noises);
 
   setWhatProduced(this,&ClusterizerUnitTesterESProducer::produceGainRcd);
   setWhatProduced(this,&ClusterizerUnitTesterESProducer::produceNoisesRcd);
@@ -26,26 +22,19 @@ ClusterizerUnitTesterESProducer(const edm::ParameterSet& conf)
 
 void 
 ClusterizerUnitTesterESProducer::
-extractNoiseGainQuality(const edm::ParameterSet& conf,
-                        SiStripQuality* quality,
-                        SiStripApvGain* apvGain,
-                        SiStripNoises* noises) {
+extractNoiseGainQuality(const edm::ParameterSet& conf) {
   uint32_t detId = 0;
   VPSet groups = conf.getParameter<VPSet>("ClusterizerTestGroups");
   for(iter_t group = groups.begin(); group < groups.end(); group++) {
     VPSet tests = group->getParameter<VPSet>("Tests");
     for(iter_t test = tests.begin();  test < tests.end();  test++)
-      extractNoiseGainQualityForDetId( detId++, test->getParameter<VPSet>("Digis"),
-                                       quality, apvGain, noises);
+      extractNoiseGainQualityForDetId( detId++, test->getParameter<VPSet>("Digis"));
   }
 }
 
 void
 ClusterizerUnitTesterESProducer::
-extractNoiseGainQualityForDetId(uint32_t detId, const VPSet& digiset,
-                                SiStripQuality* quality,
-                                SiStripApvGain* apvGain,
-                                SiStripNoises* noises) {
+extractNoiseGainQualityForDetId(uint32_t detId, const VPSet& digiset) {
   std::vector<std::pair<uint16_t,float> > detNoises;
   std::vector<std::pair<uint16_t,float> > detGains;
   std::vector<unsigned> detBadStrips;
@@ -58,8 +47,8 @@ extractNoiseGainQualityForDetId(uint32_t detId, const VPSet& digiset,
     if(!digi->getParameter<bool>("Quality") )
       detBadStrips.push_back(quality->encode(strip,1));
   }
-  setNoises(detId, detNoises, noises);
-  setGains(detId, detGains, apvGain);
+  setNoises(detId, detNoises);
+  setGains(detId, detGains);
   if(detBadStrips.size())
     quality->add(detId, std::make_pair(detBadStrips.begin(), detBadStrips.end()));  
 }
@@ -67,7 +56,7 @@ extractNoiseGainQualityForDetId(uint32_t detId, const VPSet& digiset,
 
 void 
 ClusterizerUnitTesterESProducer::
-setNoises(uint32_t detId, std::vector<std::pair<uint16_t, float> >& digiNoises, SiStripNoises* noises) {
+setNoises(uint32_t detId, std::vector<std::pair<uint16_t, float> >& digiNoises ) {
   std::sort(digiNoises.begin(),digiNoises.end());
   std::vector<float> detnoise;
   for(std::vector<std::pair<uint16_t,float> >::const_iterator digi=digiNoises.begin(); digi<digiNoises.end(); ++digi){
@@ -86,7 +75,7 @@ setNoises(uint32_t detId, std::vector<std::pair<uint16_t, float> >& digiNoises, 
 
 void 
 ClusterizerUnitTesterESProducer::
-setGains(uint32_t detId, std::vector<std::pair<uint16_t, float> >& digiGains, SiStripApvGain* apvGain) {
+setGains(uint32_t detId, std::vector<std::pair<uint16_t, float> >& digiGains) {
   std::sort(digiGains.begin(),digiGains.end());
   std::vector<float> detApvGains;
   for(std::vector<std::pair<uint16_t,float> >::const_iterator digi=digiGains.begin(); digi<digiGains.end(); ++digi){

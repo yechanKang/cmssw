@@ -27,6 +27,7 @@
 //---------------
 
 #include <iosfwd>
+#include <functional>
 #include <string>
 
 //----------------------
@@ -123,18 +124,24 @@ class L1MuGMTExtendedCand : public L1MuGMTCand {
     friend std::ostream& operator<<(std::ostream&, const L1MuGMTExtendedCand&);
 
     /// define a rank for muon candidates
-    static bool compareRank( const L1MuGMTExtendedCand* first, const L1MuGMTExtendedCand* second ) {
-      unsigned int rank_f = (first) ? first->rank(): 0;
-      unsigned int rank_s = (second) ? second->rank() : 0;
-      return rank_f > rank_s;
-    }
+    class Rank : std::binary_function< const L1MuGMTExtendedCand*, const L1MuGMTExtendedCand*, bool> {
+      public :
+        bool operator()( const L1MuGMTExtendedCand* first, const L1MuGMTExtendedCand* second ) const {
+          unsigned int rank_f = (first) ? first->rank(): 0;
+          unsigned int rank_s = (second) ? second->rank() : 0;
+	  return rank_f > rank_s;
+        }
+    };
 
     /// define a rank for muon candidates
-    static bool rankRef( const L1MuGMTExtendedCand& first, const L1MuGMTExtendedCand& second ) {
-      unsigned int rank_f = first.rank();
-      unsigned int rank_s = second.rank();
-      return rank_f > rank_s;
-    }
+    class RankRef : std::binary_function< const L1MuGMTExtendedCand&, const L1MuGMTExtendedCand&, bool> {
+      public :
+        bool operator()( const L1MuGMTExtendedCand& first, const L1MuGMTExtendedCand& second ) const {
+          unsigned int rank_f = first.rank();
+          unsigned int rank_s = second.rank();
+	  return rank_f > rank_s;
+        }
+    };
 
   private:
     unsigned int m_rank;

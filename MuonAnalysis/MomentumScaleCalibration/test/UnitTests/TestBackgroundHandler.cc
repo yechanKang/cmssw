@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <boost/foreach.hpp>
 
 #include "MuonAnalysis/MomentumScaleCalibration/interface/BackgroundHandler.h"
 
@@ -51,7 +52,7 @@ public:
 
     // Check that the resonance windows contain the correct masses and bounds
     unsigned int i=0;
-    for(auto const& resonanceWindow : backgroundHandler_->resonanceWindow_)
+    BOOST_FOREACH( const MassWindow & resonanceWindow, backgroundHandler_->resonanceWindow_)
     {
       CPPUNIT_ASSERT(resonanceWindow.mass() == ResMass[i]);
       // Convert to float because of precision problems with doubles
@@ -68,7 +69,7 @@ public:
     resMassForRegion[1] = (ResMass[1]+ResMass[2]+ResMass[3])/3;
     resMassForRegion[2] = (ResMass[4]+ResMass[5])/2;
     i = 0;
-    for(auto const& backgroundWindow : backgroundHandler_->backgroundWindow_)
+    BOOST_FOREACH( const MassWindow & backgroundWindow, backgroundHandler_->backgroundWindow_)
     {
       CPPUNIT_ASSERT(backgroundWindow.mass() == resMassForRegion[i]);
       CPPUNIT_ASSERT(float(backgroundWindow.lowerBound()) == float(leftWindowBorders[i]));

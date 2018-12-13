@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <boost/foreach.hpp>
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/TriggerResults.h"

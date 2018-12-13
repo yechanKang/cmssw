@@ -32,7 +32,6 @@
 #include "FWCore/Utilities/interface/ObjectWithDict.h"
 #include "FWCore/Utilities/interface/TypeWithDict.h"
 #include "FWCore/Utilities/interface/TypeToGet.h"
-#include "FWCore/ParameterSet/interface/Registry.h"
 
 // system include files
 #include <algorithm>
@@ -282,7 +281,6 @@ namespace edm {
      int         evno_;
      std::map<std::string, int> cumulates_;
      bool        listContent_;
-     bool        listProvenance_;
   };
 
   //
@@ -296,8 +294,7 @@ namespace edm {
     getModuleLabels_(iConfig.getUntrackedParameter("getDataForModuleLabels", std::vector<std::string>())),
     getData_(iConfig.getUntrackedParameter("getData", false) || !getModuleLabels_.empty()),
     evno_(1),
-    listContent_(iConfig.getUntrackedParameter("listContent", true)),
-    listProvenance_(iConfig.getUntrackedParameter("listProvenance", false))
+    listContent_(iConfig.getUntrackedParameter("listContent", true))
   {
      //now do what ever initialization is needed
      sort_all(moduleLabels_);
@@ -381,42 +378,8 @@ namespace edm {
                                        << processName << "\""
                                        << " (productId = " << provenance->productID() << ")"
                                        << std::endl;
-
-           if(listProvenance_) {
-             auto const& prov = iEvent.getProvenance(provenance->branchID());
-             auto const *productProvenance = prov.productProvenance();
-             if(productProvenance) {
-               const bool isAlias = productProvenance->branchID() != provenance->branchID();
-               std::string aliasForModLabel;
-               LogAbsolute("EventContent") << prov;
-               if(isAlias) {
-                 aliasForModLabel = iEvent.getProvenance(productProvenance->branchID()).moduleLabel();
-                 LogAbsolute("EventContent") << "Is an alias for " << aliasForModLabel;
-               }
-               ProcessHistory const *processHistory = prov.processHistoryPtr();
-               if(processHistory) {
-                 for(ProcessConfiguration const& pc: *processHistory) {
-                   if(pc.processName() == prov.processName()) {
-                     ParameterSetID const& psetID = pc.parameterSetID();
-                     pset::Registry const* psetRegistry = pset::Registry::instance();
-                     ParameterSet const* processPset = psetRegistry->getMapped(psetID);
-                     if (processPset) {
-                       if(processPset->existsAs<ParameterSet>(modLabel)) {
-                         if(isAlias) {
-                           LogAbsolute("EventContent") << "Alias PSet";
-                         }
-                         LogAbsolute("EventContent") << processPset->getParameterSet(modLabel);
-                       }
-                       if(isAlias and processPset->existsAs<ParameterSet>(aliasForModLabel)) {
-                         LogAbsolute("EventContent") << processPset->getParameterSet(aliasForModLabel);
-                       }
-                     }
-                   }
-                 }
-               }
-             }
-           }
          }
+
          std::string key = friendlyName
            + std::string(" + \"") + modLabel
            + std::string("\" + \"") + instanceName + "\" \"" + processName + "\"";
@@ -509,8 +472,6 @@ namespace edm {
      np = desc.addOptionalUntracked<bool>("listContent", true);
      np->setComment("If true then print a list of all the event content.");
 
-     np = desc.addOptionalUntracked<bool>("listProvenance", false);
-     np->setComment("If true, and if listContent or verbose is true, print provenance information for each product");
 
      descriptions.add("printContent", desc);
   }

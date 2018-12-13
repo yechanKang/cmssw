@@ -154,7 +154,8 @@ void SiStripDigitizer::accumulateStripHits(edm::Handle<std::vector<PSimHit> > hS
     const TrackerTopology *tTopo=tTopoHand.product();
 
     //Re-compute luminosity for accumulation for HIP effects
-    theDigiAlgo->calculateInstlumiScale(PileupInfo_.get());
+    PileupInfo_ = getEventPileupInfo();
+    theDigiAlgo->calculateInstlumiScale(PileupInfo_);
 
     // Step A: Get Inputs
     for(auto const& trackerContainer : trackerContainers) {

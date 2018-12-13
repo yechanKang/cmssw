@@ -32,9 +32,7 @@ class ETLElectronicsSim {
 
   void runTrivialShaper(ETLDataFrame &dataFrame, 
 			const mtd::MTDSimHitData& chargeColl,
-			const mtd::MTDSimHitData& toa,
-			const uint8_t row,
-			const uint8_t column) const;
+			const mtd::MTDSimHitData& toa) const;
 
   void updateOutput(ETLDigiCollection &coll,
 		    const ETLDataFrame& rawDataFrame) const;

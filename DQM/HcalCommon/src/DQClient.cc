@@ -13,7 +13,7 @@ namespace hcaldqm
 		_name = name;
 	}
 
-	void DQClient::beginRun(edm::Run const& r,
+	/* virtual */ void DQClient::beginRun(edm::Run const& r,
 		edm::EventSetup const& es)
 	{
 		//	TEMPORARY
@@ -87,16 +87,8 @@ namespace hcaldqm
 			}
 		}
 
-		// Initialize channel quality masks, but do not load (changed for 10_4_X, moving to LS granularity)
-		_xQuality.initialize(hashfunctions::fDChannel);
-	}
-	
-	void DQClient::beginLuminosityBlock(DQMStore::IBooker&,
-		DQMStore::IGetter&, edm::LuminosityBlock const& lb,
-		edm::EventSetup const& es)
-	{
 		//	get the Channel Quality masks
-		_xQuality.reset();
+		_xQuality.initialize(hashfunctions::fDChannel);
 		edm::ESHandle<HcalChannelQuality> hcq;
 		es.get<HcalChannelQualityRcd>().get("withTopo", hcq);
 		const HcalChannelQuality *cq = hcq.product();
@@ -118,7 +110,7 @@ namespace hcaldqm
 		}
 	}
 
-	void DQClient::endLuminosityBlock(DQMStore::IBooker&,
+	/* virtual */ void DQClient::endLuminosityBlock(DQMStore::IBooker&,
 		DQMStore::IGetter&, edm::LuminosityBlock const& lb,
 		edm::EventSetup const&)
 	{
@@ -128,7 +120,7 @@ namespace hcaldqm
 			_maxProcessedLS=_currentLS;
 	}
 
-	std::vector<flag::Flag> DQClient::endJob(DQMStore::IBooker&,
+	/* virtual */ std::vector<flag::Flag> DQClient::endJob(DQMStore::IBooker&,
 		DQMStore::IGetter&)
 	{
 		return std::vector<flag::Flag>();

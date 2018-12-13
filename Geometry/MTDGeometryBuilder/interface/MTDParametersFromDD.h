@@ -11,12 +11,15 @@ class PMTDParameters;
 class MTDParametersFromDD {
  public:
   MTDParametersFromDD() {}
+  MTDParametersFromDD(const edm::ParameterSet& );
   virtual ~MTDParametersFromDD() {}
 
   bool build( const DDCompactView*,
 	      PMTDParameters& );
  private:
   void putOne( int, std::vector<int> &, PMTDParameters& );
+  std::vector<PMTDParameters::Item> items_;
+  std::vector<int> pars_;
 };
 
 #endif

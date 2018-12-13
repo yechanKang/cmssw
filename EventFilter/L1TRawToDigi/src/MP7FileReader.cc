@@ -3,8 +3,10 @@
 
 #include "EventFilter/L1TRawToDigi/interface/MP7FileReader.h"
 
+//#include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
+#include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <iostream>
@@ -71,7 +73,7 @@ std::vector<std::string>
 MP7FileReader::names() const {
     std::vector<std::string> names(buffers_.size());
     
-    for(auto const& r : buffers_ ) {
+    BOOST_FOREACH( const FileData& r, buffers_ ) {
         names.push_back(r.name());
     } 
     return names;
@@ -90,7 +92,7 @@ MP7FileReader::load() {
 
         //cout << "Links (" << links.size() << ") : ";
 
-        //for(uint32_t l : links) {
+        //BOOST_FOREACH(uint32_t l, links) {
             //cout << l << ",";
         //}
         //cout << endl;

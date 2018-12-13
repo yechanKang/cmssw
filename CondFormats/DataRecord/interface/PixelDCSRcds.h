@@ -3,9 +3,9 @@
 
 #include "FWCore/Framework/interface/EventSetupRecordImplementation.h"
 
-struct CaenChannel;
+class CaenChannel;
 
-template <class> struct PixelDCSObject;
+template <class> class PixelDCSObject;
 
 struct PixelCaenChannelIsOnRcd:
   public edm::eventsetup::EventSetupRecordImplementation<PixelCaenChannelIsOnRcd>

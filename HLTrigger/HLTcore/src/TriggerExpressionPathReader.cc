@@ -1,5 +1,6 @@
 #include <cassert>
 #include <sstream>
+#include <boost/foreach.hpp>
 
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "FWCore/Utilities/interface/RegexMatch.h"
@@ -15,7 +16,8 @@ bool PathReader::operator()(const Data & data) const {
   if (not data.hasHLT())
     return false;
 
-  for(auto const& trigger : m_triggers)
+  typedef std::pair<std::string, unsigned int> value_type;
+  BOOST_FOREACH(const value_type & trigger, m_triggers)
     if (data.hltResults().accept(trigger.second))
       return true;
 
@@ -53,7 +55,7 @@ void PathReader::init(const Data & data) {
       if (hltMenu.triggerNames().empty())
         msg << " (none)";
       else
-        for(auto const& p : hltMenu.triggerNames())
+        BOOST_FOREACH(const std::string & p, hltMenu.triggerNames())
           msg << "\n\t" << p;
       if (data.shouldThrow())
         throw cms::Exception("Configuration") << msg.str();
@@ -70,7 +72,7 @@ void PathReader::init(const Data & data) {
       if (hltMenu.triggerNames().empty())
         msg << " (none)";
       else
-        for(auto const& p : hltMenu.triggerNames())
+        BOOST_FOREACH(const std::string & p, hltMenu.triggerNames())
           msg << "\n\t" << p;
       if (data.shouldThrow())
         throw cms::Exception("Configuration") << msg.str();
@@ -78,7 +80,7 @@ void PathReader::init(const Data & data) {
         edm::LogWarning("Configuration") << msg.str();
     } else {
       // store indices corresponding to the matching triggers
-      for(auto const& match : matches) {
+      BOOST_FOREACH(const std::vector<std::string>::const_iterator & match, matches) {
         unsigned int index = hltMenu.triggerIndex(*match);
         assert(index < hltMenu.size());
         m_triggers.push_back( std::make_pair(*match, index) );

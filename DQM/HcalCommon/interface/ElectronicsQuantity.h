@@ -8,6 +8,7 @@
 
 #include "DQM/HcalCommon/interface/Quantity.h"
 #include "boost/unordered_map.hpp"
+#include "boost/foreach.hpp"
 
 namespace hcaldqm
 {
@@ -389,7 +390,7 @@ namespace hcaldqm
 				FEDQuantity* makeCopy() override
 				{
 					std::vector<int> vfeds;
-					for(auto const& p : _feds)
+					BOOST_FOREACH(FEDMap::value_type &p, _feds)
 					{
 						vfeds.push_back(p.first);
 					}

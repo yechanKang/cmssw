@@ -19,6 +19,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "boost/foreach.hpp"
 
 #include "CalibTracker/Records/interface/SiStripDependentRecords.h"
 #include <map>
@@ -140,7 +141,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 		int trk_idx = shallow::findTrackIndex(tracks, track); 
 		size_t trk_strt_idx = ontrk_cluster_idx;
 
-    for(auto const& measurement : traj->measurements() ) {
+    BOOST_FOREACH( const TrajectoryMeasurement measurement, traj->measurements() ) {
       const TrajectoryStateOnSurface& tsos = measurement.updatedState();
       const TrajectoryStateOnSurface unbiased = combiner(measurement.forwardPredictedState(), measurement.backwardPredictedState());
 
@@ -219,7 +220,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 				
 				ontrk_cluster_idx++;
       } //for(unsigned h=0; h<2; h++) { //loop over possible Hit options (1D, 2D)
-    } //for(auto const& measurement : traj->measurements() )
+    } //BOOST_FOREACH( const TrajectoryMeasurement measurement, traj->measurements() )
 
 		onTrkClustersBegin->at(trk_idx) = trk_strt_idx;
 		onTrkClustersEnd->at(trk_idx)   = ontrk_cluster_idx;

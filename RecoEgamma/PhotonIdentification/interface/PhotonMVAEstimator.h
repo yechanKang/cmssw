@@ -9,7 +9,6 @@
 #include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 #include "CondFormats/EgammaObjects/interface/GBRForest.h"
 #include "RecoEgamma/EgammaTools/interface/MVAVariableManager.h"
-#include "RecoEgamma/EgammaTools/interface/ThreadSafeStringCut.h"
 
 class PhotonMVAEstimator : public AnyMVAEstimatorRun2Base{
   
@@ -20,19 +19,23 @@ class PhotonMVAEstimator : public AnyMVAEstimatorRun2Base{
   ~PhotonMVAEstimator() override {};
 
   // Calculation of the MVA value
-  float mvaValue( const reco::Candidate* candPtr, std::vector<float> const& auxVars, int &iCategory) const override;
+  float mvaValue( const edm::Ptr<reco::Candidate>& candPtr, const edm::EventBase& iEvent, int &iCategory) const override;
   
-  int findCategory( const reco::Candidate* candPtr) const override;
+  // Call this function once after the constructor to declare
+  // the needed event content pieces to the framework
+  void setConsumes(edm::ConsumesCollector&&) override;
+  
+  int findCategory( const edm::Ptr<reco::Candidate>& candPtr) const override;
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
  private:
 
-  int findCategory(reco::Photon const& photon) const;
+  int findCategory( const edm::Ptr<reco::Photon>& phoPtr ) const;
 
   // The number of categories and number of variables per category
   int nCategories_;
-  std::vector<ThreadSafeStringCut<StringCutObjectSelector<reco::Photon>,reco::Photon>> categoryFunctions_;
+  std::vector<StringCutObjectSelector<reco::Photon>> categoryFunctions_;
   std::vector<int> nVariables_;
 
   // Data members

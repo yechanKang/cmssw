@@ -42,12 +42,13 @@ GctDigiToRaw::GctDigiToRaw(const edm::ParameterSet& iConfig) :
   packRctCalo_(iConfig.getUntrackedParameter<bool>("packRctCalo", true)),
   fedId_(iConfig.getParameter<int>("gctFedId")),
   verbose_(iConfig.getUntrackedParameter<bool>("verbose",false)),
-  counter_(0)
+  counter_(0),
+  formatTranslator_()
 {
   LogDebug("GCT") << "GctDigiToRaw will pack FED Id " << fedId_;
 
   //register the products
-  tokenPut_ = produces<FEDRawDataCollection>();
+  produces<FEDRawDataCollection>();
   const edm::InputTag rctInputTag = iConfig.getParameter<edm::InputTag>("rctInputLabel");
   const edm::InputTag gctInputTag = iConfig.getParameter<edm::InputTag>("gctInputLabel");
   const std::string& gctInputLabelStr = gctInputTag.label();
@@ -72,25 +73,30 @@ GctDigiToRaw::GctDigiToRaw(const edm::ParameterSet& iConfig) :
 }
 
 
+GctDigiToRaw::~GctDigiToRaw()
+{
+   // do anything here that needs to be done at destruction time
+   // (e.g. close files, deallocate resources etc.)
+}
+
+
 //
 // member functions
 //
 
 // ------------ method called to produce the data  ------------
 void
-GctDigiToRaw::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const
+GctDigiToRaw::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
   
-  auto counter = counter_++; // To "simulate" bunch crossings for now...
-  unsigned int bx = counter % 3564;  // What's the proper way of doing this?
+  counter_++; // To "simulate" bunch crossings for now...
+  unsigned int bx = counter_ % 3564;  // What's the proper way of doing this?
   EventNumber_t eventNumber = iEvent.id().event();
   
-  // digi to block converter
   // Supply bx and EvID to the packer so it can make internal capture block headers.
-  GctFormatTranslateMCLegacy formatTranslator;
-  formatTranslator.setPackingBxId(bx);
-  formatTranslator.setPackingEventId(eventNumber);
+  formatTranslator_.setPackingBxId(bx);
+  formatTranslator_.setPackingEventId(eventNumber);
  
   // get GCT digis
   edm::Handle<L1GctEmCandCollection> isoEm;
@@ -145,10 +151,10 @@ GctDigiToRaw::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& 
   }
   
   // create the raw data collection
-  FEDRawDataCollection rawColl;
+  std::unique_ptr<FEDRawDataCollection> rawColl(new FEDRawDataCollection()); 
  
   // get the GCT buffer
-  FEDRawData& fedRawData=rawColl.FEDData(fedId_);
+  FEDRawData& fedRawData=rawColl->FEDData(fedId_);
  
   // set the size & make pointers to the header, beginning of payload, and footer.
   unsigned int rawSize = 88;  // MUST BE MULTIPLE OF 8! (slink packets are 64 bit, but using 8-bit data struct).
@@ -164,37 +170,37 @@ GctDigiToRaw::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& 
   fedHeader.set(pHeader, 1, eventNumber, bx, fedId_);  // what should the bx_ID be?
  
   // Pack GCT jet output digis
-  formatTranslator.writeGctOutJetBlock(pPayload, 
-                                       cenJets.product(),
-                                       forJets.product(),
-                                       tauJets.product(),
-                                       hfRingSums.product(), 
-                                       hfBitCounts.product(),
-                                       htMiss.product());
+  formatTranslator_.writeGctOutJetBlock(pPayload, 
+                                        cenJets.product(),
+                                        forJets.product(),
+                                        tauJets.product(),
+                                        hfRingSums.product(), 
+                                        hfBitCounts.product(),
+                                        htMiss.product());
 
   pPayload += 36; //advance payload pointer
   
   // Pack GCT EM and energy sums digis.
-  formatTranslator.writeGctOutEmAndEnergyBlock(pPayload,
-                                               isoEm.product(), 
-                                               nonIsoEm.product(),
-                                               etTotal.product(), 
-                                               etHad.product(), 
-                                               etMiss.product());
+  formatTranslator_.writeGctOutEmAndEnergyBlock(pPayload,
+                                                isoEm.product(), 
+                                                nonIsoEm.product(),
+                                                etTotal.product(), 
+                                                etHad.product(), 
+                                                etMiss.product());
 
   pPayload += 28; //advance payload pointer
 
   // Pack RCT EM Cands
   if(packRctEmThisEvent)
   {
-    formatTranslator.writeRctEmCandBlocks(pPayload, rctEm.product());
+    formatTranslator_.writeRctEmCandBlocks(pPayload, rctEm.product());
     pPayload+=232;  //advance payload pointer
   }
 
   // Pack RCT Calo Regions
   if(packRctCaloThisEvent)
   {
-    formatTranslator.writeAllRctCaloRegionBlock(pPayload, rctCalo.product());
+    formatTranslator_.writeAllRctCaloRegionBlock(pPayload, rctCalo.product());
   }
   
   // Write CDF footer (exactly as told by Marco Zanetti)
@@ -205,11 +211,11 @@ GctDigiToRaw::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& 
   if (verbose_) { print(fedRawData); }
  
   // Put the collection in the event.
-  iEvent.emplace(tokenPut_,std::move(rawColl));
+  iEvent.put(std::move(rawColl));
 }
 
 
-void GctDigiToRaw::print(FEDRawData& data) const {
+void GctDigiToRaw::print(FEDRawData& data) {
 
   const unsigned char * d = data.data();
 
@@ -220,6 +226,17 @@ void GctDigiToRaw::print(FEDRawData& data) const {
 
 }
 
+
+// ------------ method called once each job just before starting event loop  ------------
+void 
+GctDigiToRaw::beginJob()
+{
+}
+
+// ------------ method called once each job just after ending the event loop  ------------
+void 
+GctDigiToRaw::endJob() {
+}
 
 /// make this a plugin
 DEFINE_FWK_MODULE(GctDigiToRaw);

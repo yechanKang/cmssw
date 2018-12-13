@@ -73,10 +73,7 @@ autoDQM = { 'common' : ['DQMOfflineCommon+@L1TMon',
                                    'dqmHarvestingFakeHLT'],
             'liteDQMHI': ['liteDQMOfflineHeavyIons',
                           'PostDQMOffline',
-                          'dqmHarvesting'],
-            'none': ['DQMNone',
-                     'PostDQMOffline',
-                     'DQMNone'],
+                          'dqmHarvesting']
             }
 
 _phase2_allowed = ['trackingOnlyDQM','outerTracker','muon','hcal','hcal2','egamma']

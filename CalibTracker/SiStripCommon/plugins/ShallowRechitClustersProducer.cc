@@ -9,6 +9,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "CalibTracker/SiStripCommon/interface/ShallowTools.h"
+#include "boost/foreach.hpp"
 
 ShallowRechitClustersProducer::ShallowRechitClustersProducer(const edm::ParameterSet& iConfig)
   :  Suffix       ( iConfig.getParameter<std::string>("Suffix") ),
@@ -53,8 +54,8 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	for(auto recHit_token : rec_hits_tokens_) {
 		edm::Handle<SiStripRecHit2DCollection> recHits; 
 		iEvent.getByToken(recHit_token, recHits);
-    for(auto const& ds : *recHits) {
-      for(auto const& hit : ds) {
+    BOOST_FOREACH( const SiStripRecHit2DCollection::value_type& ds, *recHits) {
+      BOOST_FOREACH( const SiStripRecHit2D& hit, ds) {
 	
 				shallow::CLUSTERMAP::iterator cluster = clustermap.find( std::make_pair(hit.geographicalId().rawId(), hit.cluster()->firstStrip()   ) );
 				if(cluster != clustermap.end() ) {

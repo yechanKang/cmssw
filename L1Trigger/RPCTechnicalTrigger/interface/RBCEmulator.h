@@ -11,7 +11,6 @@
 
 #include "CondFormats/RPCObjects/interface/RBCBoardSpecs.h"
 
-#include <memory>
 /** @class RBCEmulator RBCEmulator.h
  *  
  *
@@ -33,6 +32,8 @@ public:
   
   RBCEmulator( const char * , const char * , int, int *); 
   
+  virtual ~RBCEmulator( ); ///< Destructor
+
   void setSpecifications( const RBCBoardSpecs * );
     
   bool initialise();
@@ -47,32 +48,34 @@ public:
   
   std::bitset<6> * getlayersignal( int idx ) { return m_layersignal[idx];};
 
-  bool getdecision( int idx ) const { return m_decision[idx];};
+  bool getdecision( int idx ) { return m_decision[idx];};
     
-  void printinfo() const;
+  void printinfo();
   
-  void printlayerinfo() const;
+  void printlayerinfo();
   
-  const RBCId& rbcinfo() const { return m_rbcinfo;}
+  RBCId          * m_rbcinfo;
   
 protected:
   
 private:
-  RBCId           m_rbcinfo;
   
-  std::unique_ptr<ProcessInputSignal> m_signal;
+  ProcessInputSignal * m_signal;
   
-  std::unique_ptr<RBCConfiguration>   m_rbcconf;
+  RBCConfiguration   * m_rbcconf;
   
-  RBCInput           m_input;
+  RBCInput           * m_input;
   
   std::bitset<6> * m_layersignal[2];
   
   std::bitset<2> m_decision;
   
-  std::array<std::bitset<6>,2> m_layersignalVec;
+  std::vector< std::bitset<6> *> m_layersignalVec;
   
   //...
+  
+  int m_bx;
+  
   std::string m_logtype;
 
   bool m_debug;

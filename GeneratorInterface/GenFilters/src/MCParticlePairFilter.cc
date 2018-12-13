@@ -140,7 +140,8 @@ bool MCParticlePairFilter::filter(edm::StreamID, edm::Event& iEvent, const edm::
 	 double eta1 = mom.eta();
 	 double eta2;
 	 double deltaR;
-
+	 //HepLorentzVector momentum1 = (*p)->momentum();
+	 //HepLorentzVector totmomentum;
 	 double tot_x= 0.;
 	 double tot_y= 0.;
 	 double tot_z= 0.;
@@ -154,7 +155,9 @@ bool MCParticlePairFilter::filter(edm::StreamID, edm::Event& iEvent, const edm::
 	   tot_z=mom.pz();
 	   tot_e=mom.e();
 	   charge1 = charge((*p)->pdg_id());
-           HepMC::FourVector mom_i = MCFilterZboostHelper::zboost(typeBpassed[i]->momentum(),betaBoost);
+	   //totmomentum = momentum1 + typeBpassed[i]->momentum();
+	   //invmass = totmomentum.m();
+      HepMC::FourVector mom_i = MCFilterZboostHelper::zboost(typeBpassed[i]->momentum(),betaBoost);
 	   tot_x += mom_i.px();
 	   tot_y += mom_i.py();
 	   tot_z += mom_i.pz();
@@ -209,7 +212,8 @@ bool MCParticlePairFilter::filter(edm::StreamID, edm::Event& iEvent, const edm::
 	 double eta1 = mom.eta();
 	 double eta2;
 	 double deltaR;
-
+	 //HepLorentzVector momentum1 = (*p)->momentum();
+	 //HepLorentzVector totmomentum;
 	 double tot_x= 0.;
 	 double tot_y= 0.;
 	 double tot_z= 0.;
@@ -224,7 +228,9 @@ bool MCParticlePairFilter::filter(edm::StreamID, edm::Event& iEvent, const edm::
 	     tot_z=mom.pz();
 	     tot_e=mom.e();
 	     charge1 = charge((*p)->pdg_id());
-             HepMC::FourVector mom_i = MCFilterZboostHelper::zboost(typeApassed[i]->momentum(),betaBoost);
+	     //totmomentum = momentum1 + typeApassed[i]->momentum();
+        //invmass = totmomentum.m();
+        HepMC::FourVector mom_i = MCFilterZboostHelper::zboost(mom_i,betaBoost);
 	     tot_x += mom_i.px();
 	     tot_y += mom_i.py();
 	     tot_z += mom_i.pz();

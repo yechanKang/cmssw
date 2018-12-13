@@ -251,12 +251,13 @@ namespace cms
     std::vector<edm::DetSet<PixelDigi> > theDigiVector;
     std::vector<edm::DetSet<PixelDigiSimLink> > theDigiLinkVector;
  
+    PileupInfo_ = getEventPileupInfo();
     if (firstFinalizeEvent_) {
       const unsigned int bunchspace = PileupInfo_->getMix_bunchSpacing();
       _pixeldigialgo->init_DynIneffDB(iSetup, bunchspace);
       firstFinalizeEvent_ = false;
     }
-    _pixeldigialgo->calculateInstlumiFactor(PileupInfo_.get());
+    _pixeldigialgo->calculateInstlumiFactor(PileupInfo_);   
 
     for( const auto& iu : pDD->detUnits()) {
       

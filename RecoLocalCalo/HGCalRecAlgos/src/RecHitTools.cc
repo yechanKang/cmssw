@@ -18,6 +18,11 @@
 using namespace hgcal;
 
 namespace {
+  constexpr char hgcalee_sens[] = "HGCalEESensitive";
+  constexpr char hgcalfh_sens[] = "HGCalHESiliconSensitive";
+
+  constexpr std::float_t idx_to_thickness = std::float_t(100.0);
+
   template<typename DDD>
   inline void check_ddd(const DDD* ddd) {
     if( nullptr == ddd ) {
@@ -34,6 +39,14 @@ namespace {
     }
   }
 
+  inline const HcalDDDRecConstants* get_ddd(const CaloSubdetectorGeometry* geom,
+					    const HcalDetId& detid) {
+    const HcalGeometry* hc = static_cast<const HcalGeometry*>(geom);
+    const HcalDDDRecConstants* ddd = hc->topology().dddConstants();
+    check_ddd(ddd);
+    return ddd;
+  }
+
   inline const HGCalDDDConstants* get_ddd(const CaloSubdetectorGeometry* geom,
 					  const HGCalDetId& detid) {
     const HGCalGeometry* hg = static_cast<const HGCalGeometry*>(geom);
@@ -44,6 +57,14 @@ namespace {
 
   inline const HGCalDDDConstants* get_ddd(const CaloSubdetectorGeometry* geom,
 					  const HGCSiliconDetId& detid) {
+    const HGCalGeometry* hg = static_cast<const HGCalGeometry*>(geom);
+    const HGCalDDDConstants* ddd = &(hg->topology().dddConstants());
+    check_ddd(ddd);
+    return ddd;
+  }
+
+  inline const HGCalDDDConstants* get_ddd(const CaloSubdetectorGeometry* geom,
+					  const HGCScintillatorDetId& detid) {
     const HGCalGeometry* hg = static_cast<const HGCalGeometry*>(geom);
     const HGCalDDDConstants* ddd = &(hg->topology().dddConstants());
     check_ddd(ddd);

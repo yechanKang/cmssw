@@ -1,43 +1,26 @@
-condorJobTemplate="""#!/bin/tcsh
+bjobTemplate="""#!/bin/tcsh
 
-set curDir=$PWD
-echo $curDir
-cd {base}/../..
+cd $CMSSW_BASE/src
 
 eval `scramv1 runtime -csh`
 
 source /afs/cern.ch/cms/caf/setup.csh
-cd $curDir
+cd -
 
 xrdcp {inputFile} reco.root
 
-cmsRun {base}/test/cfgTemplate/apeEstimator_cfg.py {inputCommands}
+cmsRun $CMSSW_BASE/src/Alignment/APEEstimation/test/cfgTemplate/apeEstimator_cfg.py {inputCommands}
 
-rm reco.root
+rm -- "$0"
 """
 
-condorSubTemplate="""
-Executable = {jobFile}
-Universe = vanilla
-Output = {outputFile}
-Error  = {errorFile}
-Log  = {logFile}
-request_memory = 2000M
-request_disk = 400M
-batch_name = {jobName}
-+JobFlavour = "longlunch"
-Queue Arguments from (
-{arguments})
+submitJobTemplate="""
+bsub -J {jobName} -e {errorFile} -o {outputFile} -q cmscaf1nd -R "rusage[pool=3000]" tcsh {jobFile}
 """
 
-condorArgumentTemplate="""{fileNumber} {inputFile}
-"""
+checkJobTemplate="bjobs -noheader -a -J {jobName}"
 
-submitCondorTemplate="""
-condor_submit {subFile}
-"""
-
-killJobTemplate="condor_rm {jobId}"
+killJobTemplate="bkill -J {jobName}"
 
 summaryTemplate="cmsRun $CMSSW_BASE/src/Alignment/APEEstimation/test/cfgTemplate/apeEstimatorSummary_cfg.py {inputCommands}"
 
@@ -47,12 +30,12 @@ localSettingTemplate="cmsRun $CMSSW_BASE/src/Alignment/APEEstimation/test/cfgTem
 
 conditionsFileHeader="""
 import FWCore.ParameterSet.Config as cms
-from CalibTracker.Configuration.Common.PoolDBESSource_cfi import poolDBESSource
 def applyConditions(process):
 """
 
 conditionsTemplate="""
-    process.my{record}Conditions = poolDBESSource.clone(
+    import CalibTracker.Configuration.Common.PoolDBESSource_cfi
+    process.my{record}Conditions = CalibTracker.Configuration.Common.PoolDBESSource_cfi.poolDBESSource.clone(
     connect = cms.string('{connect}'),
     toGet = cms.VPSet(cms.PSet(record = cms.string('{record}'),
                             tag = cms.string('{tag}')

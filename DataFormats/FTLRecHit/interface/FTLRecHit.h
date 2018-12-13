@@ -1,7 +1,6 @@
 #ifndef DATAFORMATS_FTLRECHIT_H
 #define DATAFORMATS_FTLRECHIT_H 1
 
-#include "DataFormats/ForwardDetId/interface/MTDDetId.h"
 #include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
 #include <vector>
 
@@ -37,10 +36,6 @@ public:
   FTLRecHit();
   // by default a recHit is greated with no flag
   FTLRecHit(const DetId& id, float energy, float time, float timeError, uint32_t flagBits = 0);
-
-  FTLRecHit(const DetId& id, uint8_t row, uint8_t column, float energy, 
-	    float time, float timeError, uint32_t flagBits = 0);
-
   /// get the id
 
   float energy() const { return energy_; }
@@ -48,11 +43,6 @@ public:
   
   const DetId& id() const { return id_; }
   const DetId& detid() const { return id(); }
-
-  const MTDDetId mtdId() const { return MTDDetId(id_); }
-
-  int row() const { return row_; }
-  int column() const { return column_; }
 
   float time() const { return time_; }
   void setTime(float time) { time_=time; }
@@ -78,7 +68,6 @@ private:
 
   DetId id_;
   float energy_, time_, timeError_;
-  uint8_t row_, column_;
 
   /// store rechit condition (see Flags enum) in a bit-wise way 
   unsigned char flagBits_;

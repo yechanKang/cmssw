@@ -30,9 +30,6 @@ namespace hcaldqm
 			~DQClient() override {}
 
 			virtual void beginRun(edm::Run const&, edm::EventSetup const&);
-			virtual void beginLuminosityBlock(DQMStore::IBooker&,
-				DQMStore::IGetter&, edm::LuminosityBlock const& lb,
-				edm::EventSetup const&);
 			virtual void endLuminosityBlock(DQMStore::IBooker&,
 				DQMStore::IGetter&,
 				edm::LuminosityBlock const&, edm::EventSetup const&);

@@ -65,7 +65,8 @@ CutApplicatorBase::result_type
 GsfEleConversionVetoCut::
 operator()(const reco::GsfElectronPtr& cand) const{  
   if( _thebs.isValid() && _convs.isValid() ) {
-    return !ConversionTools::hasMatchedConversion(*cand, *_convs, _thebs->position());
+    return !ConversionTools::hasMatchedConversion(*cand,_convs,
+						  _thebs->position());
   } else {
     edm::LogWarning("GsfEleConversionVetoCut")
       << "Couldn't find a necessary collection, returning true!";
@@ -76,7 +77,8 @@ operator()(const reco::GsfElectronPtr& cand) const{
 double GsfEleConversionVetoCut::value(const reco::CandidatePtr& cand) const {
   reco::GsfElectronPtr ele(cand);
   if( _thebs.isValid() && _convs.isValid() ) {
-    return !ConversionTools::hasMatchedConversion(*ele, *_convs, _thebs->position());
+    return !ConversionTools::hasMatchedConversion(*ele,_convs,
+						  _thebs->position());
   } else {
     edm::LogWarning("GsfEleConversionVetoCut")
       << "Couldn't find a necessary collection, returning true!";

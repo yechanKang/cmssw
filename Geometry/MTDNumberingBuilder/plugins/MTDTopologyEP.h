@@ -25,8 +25,7 @@ public:
 
 private:
   void fillParameters( const PMTDParameters& );
-
-  int mtdTopologyMode_;
+    
   MTDTopology::BTLValues btlVals_;
   MTDTopology::ETLValues etlVals_;
 };

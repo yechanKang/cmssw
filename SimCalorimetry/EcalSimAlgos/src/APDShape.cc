@@ -22,7 +22,6 @@ APDShape::fillShape(float &time_interval, double &m_thresh, EcalShapeBase::DVec&
     }
     else
     {
-	m_thresh = 0.0;
         time_interval = 1.0; 
         aVec.reserve(500);
         const double m_tStart=74.5;

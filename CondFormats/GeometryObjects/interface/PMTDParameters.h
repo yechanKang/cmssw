@@ -19,7 +19,6 @@ class PMTDParameters
 
   std::vector<Item> vitems_;
   std::vector<int> vpars_;
-  int topologyMode_;
   
   COND_SERIALIZABLE;
 };

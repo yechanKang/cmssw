@@ -35,8 +35,6 @@ DDCMSDetector::DDCMSDetector( const edm::ParameterSet& iConfig )
   }
 }
 
-#include "DD4hep/DetElement.h"
-
 void
 DDCMSDetector::analyze( const edm::Event&, const edm::EventSetup& )
 {
@@ -58,12 +56,6 @@ DDCMSDetector::analyze( const edm::Event&, const edm::EventSetup& )
       std::cout << i << ", ";
     std::cout << '\n';
   }
-  std::cout << "Iterate over the detectors:\n";
-  for( dd4hep::Detector::HandleMap::const_iterator i = description.detectors().begin(); i != description.detectors().end(); ++i ) {
-    dd4hep::DetElement det( (*i).second );
-    std::cout << (*i).first << ": " << det.path() << "\n";
-  }
-  std::cout << "..done!\n";
 }
 
 void

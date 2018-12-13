@@ -15,7 +15,8 @@ def appendDTChamberMaskerAtUnpacking(process):
 
         process.muonDTDigis.digiTag = cms.InputTag('preDtDigis') 
 
-        process.RawToDigiTask.add(process.preDtDigis)
+        process.filteredDtDigiSequence = cms.Sequence(process.preDtDigis + process.muonDTDigis)
+        process.RawToDigi.replace(process.muonDTDigis, process.filteredDtDigiSequence)
 
         if hasattr(process,"dtTriggerEfficiencyMonitor") :
             process.dtTriggerEfficiencyMonitor.inputTagDDU = 'preDtDigis'

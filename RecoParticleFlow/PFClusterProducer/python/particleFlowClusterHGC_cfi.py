@@ -27,8 +27,8 @@ _simClusterMapper_HGCal = cms.PSet(
     useMCFractionsForExclEnergy = cms.bool(False),
     thresholdsByDetector = cms.VPSet(
     ),
-    hadronCalib = hadronCorrections.value,
-    egammaCalib = egammaCorrections.value,
+    hadronCalib = hadronCorrections,
+    egammaCalib = egammaCorrections,
     calibMinEta = minEtaCorrection,
     calibMaxEta = maxEtaCorrection,
     simClusterSrc = cms.InputTag("mix:MergedCaloTruth")

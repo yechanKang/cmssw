@@ -1,6 +1,7 @@
 #include "SimDataFormats/TrackerDigiSimLink/interface/StripCompactDigiSimLinks.h"
 
 #include <algorithm>
+#include <boost/foreach.hpp>
 
 
 StripCompactDigiSimLinks::Links 
@@ -21,7 +22,7 @@ StripCompactDigiSimLinks::StripCompactDigiSimLinks(const StripCompactDigiSimLink
 {
     trackRecords_.reserve(filler.keySize());
     hitRecords_.reserve(filler.dataSize());
-    for(auto const& pair : filler.storage() ) {
+    BOOST_FOREACH( const Filler::Map::value_type &pair, filler.storage() ) {
         trackRecords_.push_back(TrackRecord(pair.first, hitRecords_.size()));
         hitRecords_.insert(hitRecords_.end(), pair.second.begin(), pair.second.end());
     }

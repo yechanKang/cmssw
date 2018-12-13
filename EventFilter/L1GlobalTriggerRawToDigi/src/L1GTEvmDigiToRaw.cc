@@ -79,7 +79,24 @@ L1GTEvmDigiToRaw::L1GTEvmDigiToRaw(const edm::ParameterSet& pSet) :
 
 }
 
+// destructor
+L1GTEvmDigiToRaw::~L1GTEvmDigiToRaw()
+{
+
+    // empty now
+
+}
+
 // member functions
+
+// beginning of job stuff
+void L1GTEvmDigiToRaw::beginJob()
+{
+
+    // empty now
+
+}
+
 
 // method called to produce the data
 void L1GTEvmDigiToRaw::produce(edm::Event& iEvent, const edm::EventSetup& evSetup)
@@ -714,6 +731,12 @@ void L1GTEvmDigiToRaw::packTrailer(unsigned char* ptrGt,
 
 }
 
+//
+void L1GTEvmDigiToRaw::endJob()
+{
+
+    // empty now
+}
 
 
 // static class members

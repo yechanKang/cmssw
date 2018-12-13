@@ -8,7 +8,6 @@
  ****************************************************************************/
 
 #include "RecoCTPPS/TotemRPLocal/interface/TotemTimingRecHitProducerAlgorithm.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 //----------------------------------------------------------------------------------------------------
 
@@ -32,19 +31,26 @@ void TotemTimingRecHitProducerAlgorithm::build(
   for (const auto &vec : input) {
     const TotemTimingDetId detid(vec.detId());
 
-    float x_pos = 0.0f, y_pos = 0.0f, z_pos = 0.0f, x_width = 0.0f, y_width = 0.0f, 
-          z_width = 0.0f;
+    float x_pos = 0, y_pos = 0, z_pos = 0, x_width = 0, y_width = 0,
+          z_width = 0;
 
     // retrieve the geometry element associated to this DetID ( if present )
     const DetGeomDesc *det = geom->getSensorNoThrow(detid);
 
     if (det) {
       x_pos = det->translation().x(), y_pos = det->translation().y();
-      z_pos = det->parentZPosition(); // retrieve the plane position;
+      if (det->parents().empty())
+        edm::LogWarning("TotemTimingRecHitProducerAlgorithm")
+            << "The geometry element for " << detid
+            << " has no parents. Check the geometry hierarchy!";
+      else
+        z_pos = det->parents()[det->parents().size() - 1]
+                    .absTranslation()
+                    .z(); // retrieve the plane position;
 
-      x_width = 2.0 * det->params()[0], // parameters stand for half the size
-      y_width = 2.0 * det->params()[1],
-      z_width = 2.0 * det->params()[2];
+      x_width = 2.0 * det->params().at(0), // parameters stand for half the size
+          y_width = 2.0 * det->params().at(1),
+      z_width = 2.0 * det->params().at(2);
     } else
       edm::LogWarning("TotemTimingRecHitProducerAlgorithm")
           << "Failed to retrieve a sensor for " << detid;
@@ -65,8 +71,8 @@ void TotemTimingRecHitProducerAlgorithm::build(
       // remove baseline
       std::vector<float> dataCorrected(data.size());
       for (unsigned int i = 0; i < data.size(); ++i)
-        dataCorrected[i] = data[i] -
-                   (baselineRegression.q + baselineRegression.m * time[i]);
+        dataCorrected.at(i) = data.at(i) -
+                   (baselineRegression.q + baselineRegression.m * time.at(i));
       auto max_corrected_it =
           std::max_element(dataCorrected.begin(), dataCorrected.end());
 
@@ -102,27 +108,27 @@ TotemTimingRecHitProducerAlgorithm::simplifiedLinearRegression(
   auto d_begin = std::next(data.begin(), start_at);
   auto d_end = std::next(data.begin(), stop_at);
 
-  float sx = .0f;
+  float sx = .0;
   std::for_each(t_begin, t_end, [&](float value) { sx += value; });
-  float sxx = .0f;
+  float sxx = .0;
   std::for_each(t_begin, t_end, [&](float value) { sxx += value * value; });
 
-  float sy = .0f;
+  float sy = .0;
   std::for_each(d_begin, d_end, [&](float value) { sy += value; });
-  float syy = .0f;
+  float syy = .0;
   std::for_each(d_begin, d_end, [&](float value) { syy += value * value; });
 
-  float sxy = .0f;
+  float sxy = .0;
   for (unsigned int i = 0; i < realPoints; ++i)
-    sxy += (time[i]) * (data[i]);
+    sxy += (time.at(i)) * (data.at(i));
 
   // y = mx + q
   results.m = (sxy * realPoints - sx * sy) / (sxx * realPoints - sx * sx);
   results.q = sy / realPoints - results.m * sx / realPoints;
 
-  float correctedSyy = .0f;
+  float correctedSyy = .0;
   for (unsigned int i = 0; i < realPoints; ++i)
-    correctedSyy += pow(data[i] - (results.m * time[i] + results.q), 2);
+    correctedSyy += pow(data.at(i) - (results.m * time.at(i) + results.q), 2);
   results.rms = sqrt(correctedSyy / realPoints);
 
   return results;
@@ -136,7 +142,7 @@ int TotemTimingRecHitProducerAlgorithm::fastDiscriminator(
 
   for (unsigned int i = 0; i < data.size(); ++i) {
     // Look for first edge
-    if (!above && !lockForHysteresis && data[i] > threshold) {
+    if (!above && !lockForHysteresis && data.at(i) > threshold) {
       threholdCrossingIndex = i;
       above = true;
       lockForHysteresis = true;
@@ -145,11 +151,11 @@ int TotemTimingRecHitProducerAlgorithm::fastDiscriminator(
                                     // the previous if
     {
       // Lock until above threshold_+hysteresis
-      if (lockForHysteresis && data[i] > threshold + hysteresis_) {
+      if (lockForHysteresis && data.at(i) > threshold + hysteresis_) {
         lockForHysteresis = false;
       }
       // Ignore noise peaks
-      if (lockForHysteresis && data[i] < threshold) {
+      if (lockForHysteresis && data.at(i) < threshold) {
         above = false;
         lockForHysteresis = false;
         threholdCrossingIndex = -1; // assigned because of noise
@@ -170,7 +176,7 @@ float TotemTimingRecHitProducerAlgorithm::constantFractionDiscriminator(
            j <= +smoothingPoints_ / 2; ++j) {
         if ((i + j) >= 0 && (i + j) < (int)data.size() && j != 0) {
           float x = SINC_COEFFICIENT * lowPassFrequency_ * j;
-          dataProcessed[i] += data[i + j] * std::sin(x) / x;
+          dataProcessed.at(i) += data.at(i + j) * std::sin(x) / x;
         }
       }
     }
@@ -184,12 +190,12 @@ float TotemTimingRecHitProducerAlgorithm::constantFractionDiscriminator(
   float t = TotemTimingRecHit::NO_T_AVAILABLE;
   if (indexOfThresholdCrossing >= baselinePoints_ &&
       indexOfThresholdCrossing < (int)time.size()) {
-    t = (time[indexOfThresholdCrossing - 1] -
-         time[indexOfThresholdCrossing]) /
-            (dataProcessed[indexOfThresholdCrossing - 1] -
-             dataProcessed[indexOfThresholdCrossing]) *
-            (threshold - dataProcessed[indexOfThresholdCrossing]) +
-        time[indexOfThresholdCrossing];
+    t = (time.at(indexOfThresholdCrossing - 1) -
+         time.at(indexOfThresholdCrossing)) /
+            (dataProcessed.at(indexOfThresholdCrossing - 1) -
+             dataProcessed.at(indexOfThresholdCrossing)) *
+            (threshold - dataProcessed.at(indexOfThresholdCrossing)) +
+        time.at(indexOfThresholdCrossing);
   }
 
   return t;

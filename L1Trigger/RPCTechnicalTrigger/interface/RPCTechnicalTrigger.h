@@ -28,12 +28,11 @@ Implementation:
 // system include files
 #include <memory>
 #include <bitset>
-#include <array>
 
 // Include files From CMSSW
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDProducer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -66,7 +65,7 @@ Implementation:
 
 //...........................................................................
 
-class RPCTechnicalTrigger : public edm::stream::EDProducer<> {
+class RPCTechnicalTrigger : public edm::EDProducer {
 public:
 
   explicit RPCTechnicalTrigger(const edm::ParameterSet&);
@@ -77,39 +76,51 @@ private:
   //virtual void beginJob() ;
   void beginRun(edm::Run const&, const edm::EventSetup&) final;
   void produce(edm::Event&, const edm::EventSetup&) override;
+  void endJob() override;
 
   //...........................................................................
   
-  void printinfo() const;
+  void printinfo();
 
-  static constexpr int kMaxTtuBoards = 3;
-  std::array<TTUEmulator,kMaxTtuBoards> m_ttu;
-
-  std::array<TTUEmulator,kMaxTtuBoards> m_ttuRbcLine;
+  bool Reset();
     
-  const int m_verbosity;
-  const int m_useEventSetup;
+  TTUEmulator * m_ttu[3];
+
+  TTUEmulator * m_ttuRbcLine[3];
+  
+  RPCInputSignal * m_input;
+  
+  ProcessInputSignal * m_signal;
+  
+  std::bitset<5> m_triggerbits;
+  
+  edm::ESHandle<RPCGeometry> m_rpcGeometry;
+  
+  int m_verbosity;
+  int m_useEventSetup;
   std::string m_configFile;
-  const std::vector<unsigned> m_ttBits;
-  const std::vector<std::string> m_ttNames;
-  const edm::InputTag m_rpcDigiLabel;
-  const edm::EDGetTokenT<RPCDigiCollection> m_rpcDigiToken;
+  std::vector<unsigned> m_ttBits;
+  std::vector<std::string> m_ttNames;
+  edm::InputTag m_rpcDigiLabel;
+  edm::InputTag m_rpcSimLinkInstance;
   
-  const int m_useRPCSimLink;
+  int m_useRPCSimLink;
   
-  std::unique_ptr<TTUConfigurator> m_readConfig;
+  TTUConfigurator     * m_readConfig;
   const TTUBoardSpecs * m_ttuspecs;
   const RBCBoardSpecs * m_rbcspecs;
   
+  int m_ievt;
+  int m_cand;
+  int m_boardIndex[3];
+  int m_nWheels[3];
+  int m_maxTtuBoards;
+  int m_maxBits;
   bool m_hasConfig;
   
   class TTUResults {
   public:
-    TTUResults() = default;
-    TTUResults(const TTUResults&) = default;
-    TTUResults(TTUResults&&) = default;
-    TTUResults& operator=(TTUResults const&) = default;
-    TTUResults& operator=(TTUResults&&) = default;
+    TTUResults() {;}
     
     TTUResults( int idx, int bx, int wh1, int wh2 ):
       m_ttuidx(idx),
@@ -124,13 +135,22 @@ private:
       m_trigWheel2(wh2),
       m_wedge(wdg) {;}
     
+    ~TTUResults() 
+    {
+      m_ttuidx=0;
+      m_bx=0;
+      m_trigWheel1=0;
+      m_trigWheel2=0;
+      m_wedge=0;
+    }
+    
     int m_ttuidx;
     int m_bx;
     int m_trigWheel1;
     int m_trigWheel2;
     int m_wedge;
   
-    int getTriggerForWheel( int wheel ) const
+    int getTriggerForWheel( int wheel ) 
     {
       if( abs(wheel) > 1 ) return m_trigWheel2;
       else return m_trigWheel1;
@@ -139,10 +159,29 @@ private:
   
   };
   
-
-  std::map<int,TTUResults*> convertToMap( const std::vector<std::unique_ptr<TTUResults>> & ) const;
+  struct sortByBx {
+    bool operator()( const TTUResults * a, const TTUResults * b )
+    {
+      return (*a).m_bx < (*b).m_bx;
+    }
+  };
   
-  bool searchCoincidence( int , int, std::map<int, TTUResults*> const& ttuResultsByQuandrant ) const;
+  std::vector<TTUResults*> m_serializedInfoLine1;
+  std::vector<TTUResults*> m_serializedInfoLine2;
+
+  int convertToMap( const std::vector<TTUResults*> & );
+  
+  bool searchCoincidence( int , int );
+  
+  std::map<int,int> m_WheelTtu;
+  
+  std::map<int,TTUResults*> m_ttuResultsByQuadrant;
+
+  std::vector<int> m_quadrants;
+  
+  std::vector<int>::iterator m_firstSector;
+  
+    
 };
 
 #endif // RPCTECHNICALTRIGGER_H

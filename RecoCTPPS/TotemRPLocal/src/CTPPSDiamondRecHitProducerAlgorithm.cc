@@ -28,7 +28,10 @@ CTPPSDiamondRecHitProducerAlgorithm::build( const CTPPSGeometry* geom, const edm
     const float x_pos = det->translation().x(),
                 y_pos = det->translation().y();
     float z_pos = 0.;
-    z_pos = det->parentZPosition(); // retrieve the plane position;
+    if ( det->parents().empty() )
+      edm::LogWarning("CTPPSDiamondRecHitProducerAlgorithm") << "The geometry element for " << detid << " has no parents. Check the geometry hierarchy!";
+    else
+      z_pos = det->parents()[det->parents().size()-1].absTranslation().z(); // retrieve the plane position;
 
     const float x_width = 2.0 * det->params().at( 0 ), // parameters stand for half the size
                 y_width = 2.0 * det->params().at( 1 ),

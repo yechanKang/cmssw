@@ -86,9 +86,7 @@ if not os.access("mps.db", os.R_OK): args.append = False
 allowed_mille_classes = ("lxplus", "cmscaf1nh", "cmscaf1nd", "cmscaf1nw",
                          "cmscafspec1nh", "cmscafspec1nd", "cmscafspec1nw",
                          "8nm", "1nh", "8nh", "1nd", "2nd", "1nw", "2nw",
-                         "cmsexpress","htcondor_espresso","htcondor_microcentury",
-                         "htcondor_longlunch","htcondor_workday","htcondor_tomorrow",
-                         "htcondor_testmatch","htcondor_nextweek")
+                         "cmsexpress")
 if lib.get_class("mille") not in allowed_mille_classes:
     print("Bad job class for mille in class", args.job_class)
     print("Allowed classes:")

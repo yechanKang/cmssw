@@ -216,10 +216,11 @@ namespace {
     return ( gsf_eta_diff <= 0.3 && cRef->energy()/comp->Pout().t() <= 5 );
   }
 
+  template<class TrackElementType>
   bool isConversionTrack(const PFFlaggedElement& e)
   {
     constexpr reco::PFBlockElement::TrackType ConvType = reco::PFBlockElement::T_FROM_GAMMACONV;
-    const reco::PFBlockElementTrack* elemastrk = docast(const reco::PFBlockElementTrack*,e.first);
+    const TrackElementType* elemastrk = docast(const TrackElementType*,e.first);
     return elemastrk->trackType(ConvType);
   }
 
@@ -231,11 +232,22 @@ namespace {
   struct NotCloserToOther {
     const reco::PFBlockElement* comp;
     const reco::PFBlockRef& block;
+    const reco::PFBlock::LinkData& links;   
     const float EoPin_cut;
     NotCloserToOther(const reco::PFBlockRef& b,
+		     const reco::PFBlock::LinkData& l,
+		     const PFFlaggedElement* e,
+		     const float EoPcut=1.0e6): comp(e->first), 
+						block(b), 
+						links(l),
+						EoPin_cut(EoPcut) { 
+    }
+    NotCloserToOther(const reco::PFBlockRef& b,
+		     const reco::PFBlock::LinkData& l,
 		     const reco::PFBlockElement* e,
 		     const float EoPcut=1.0e6): comp(e), 
 						block(b), 
+						links(l),
 						EoPin_cut(EoPcut) {
     }
     bool operator () (const PFFlaggedElement& e) {        
@@ -251,6 +263,11 @@ namespace {
     const reco::PFBlockElement* comp;
     const reco::PFBlockRef& block;
     const reco::PFBlock::LinkData& links; 
+    LesserByDistance(const reco::PFBlockRef& b,
+		     const reco::PFBlock::LinkData& l,
+		     const PFFlaggedElement* e): comp(e->first), 
+						 block(b), 
+						 links(l) {}
     LesserByDistance(const reco::PFBlockRef& b,
 		     const reco::PFBlock::LinkData& l,
 		     const reco::PFBlockElement* e): comp(e), 
@@ -584,8 +601,8 @@ PFEGammaAlgo(const PFEGammaAlgo::PFEGConfigInfo& cfg) : cfg_(cfg)
 {}
 
 void PFEGammaAlgo::RunPFEG(const pfEGHelpers::HeavyObjectCache* hoc,
-                           const reco::PFBlockRef&  blockRef)
-{  
+                           const reco::PFBlockRef&  blockRef,
+                           std::vector<bool>& active) {  
 
   fifthStepKfTrack_.clear();
   convGsfTrack_.clear();
@@ -998,9 +1015,9 @@ initializeProtoCands(std::list<PFEGammaAlgo::ProtoEGObject>& egobjs) {
      << "Precalculated cluster multiplicities: " 
      << nscclusters << ' ' << nscpsclusters << std::endl;
    NotCloserToOther<reco::PFBlockElement::SC,reco::PFBlockElement::ECAL> 
-     ecalClustersInSC(_currentblock,thesc);
+     ecalClustersInSC(_currentblock,_currentlinks,thesc);
    NotCloserToOther<reco::PFBlockElement::SC,reco::PFBlockElement::HGCAL> 
-     hgcalClustersInSC(_currentblock,thesc);
+     hgcalClustersInSC(_currentblock,_currentlinks,thesc);
    auto ecalfirstnotinsc = std::partition(ecalbegin,ecalend,ecalClustersInSC);
    auto hgcalfirstnotinsc = std::partition(hgcalbegin,hgcalend,hgcalClustersInSC);
    //reset the begin and end iterators
@@ -1224,7 +1241,7 @@ initializeProtoCands(std::list<PFEGammaAlgo::ProtoEGObject>& egobjs) {
 				       reco::PFBlock::LINKTEST_ALL);
      if( matchedGSFs.empty() ) { // only run this if we aren't associated to GSF
        LesserByDistance closestTrackToECAL(_currentblock,_currentlinks,
-					   kftrack.first);      
+					   &kftrack);      
        auto ecalbegin = _splayedblock[reco::PFBlockElement::ECAL].begin();
        auto ecalend   = _splayedblock[reco::PFBlockElement::ECAL].end();
        std::partial_sort(ecalbegin,ecalbegin+1,ecalend,closestTrackToECAL);
@@ -1403,7 +1420,7 @@ linkRefinableObjectGSFTracksToKFs(ProtoEGObject& RO) {
     // don't process SC-only ROs or secondary seeded ROs
     if( RO.electronSeed.isNull() || seedtk->trackType(convType) ) continue;
     NotCloserToOther<reco::PFBlockElement::GSF,reco::PFBlockElement::TRACK>
-      gsfTrackToKFs(_currentblock,seedtk);
+      gsfTrackToKFs(_currentblock,_currentlinks,seedtk);
     // get KF tracks not closer to another and not already used
     auto notlinked = std::partition(KFbegin,KFend,gsfTrackToKFs);
     // attach tracks and set as used
@@ -1444,7 +1461,7 @@ linkRefinableObjectPrimaryKFsToSecondaryKFs(ProtoEGObject& RO) {
 	<< std::endl;
     }
     NotCloserToOther<reco::PFBlockElement::TRACK,reco::PFBlockElement::TRACK,true>
-	kfTrackToKFs(_currentblock,primkf);
+	kfTrackToKFs(_currentblock,_currentlinks,primkf);
     // get KF tracks not closer to another and not already used
     auto notlinked = std::partition(KFbegin,KFend,kfTrackToKFs);
     // attach tracks and set as used
@@ -1474,7 +1491,7 @@ linkRefinableObjectPrimaryGSFTrackToECAL(ProtoEGObject& RO) {
   auto ECALend = _splayedblock[reco::PFBlockElement::ECAL].end();
   for( auto& primgsf : RO.primaryGSFs ) {    
     NotCloserToOther<reco::PFBlockElement::GSF,reco::PFBlockElement::ECAL>
-      gsfTracksToECALs(_currentblock,primgsf.first);
+      gsfTracksToECALs(_currentblock,_currentlinks,primgsf.first);
     auto eoverp_test = std::bind(compatibleEoPOut, _1, primgsf.first);
     // get set of matching ecals not already in SC
     auto notmatched_blk = std::partition(ECALbegin,ECALend,gsfTracksToECALs);
@@ -1525,7 +1542,7 @@ linkRefinableObjectPrimaryGSFTrackToHCAL(ProtoEGObject& RO) {
   auto HCALend = _splayedblock[reco::PFBlockElement::HCAL].end();
   for( auto& primgsf : RO.primaryGSFs ) {
     NotCloserToOther<reco::PFBlockElement::GSF,reco::PFBlockElement::HCAL>
-      gsfTracksToHCALs(_currentblock,primgsf.first);
+      gsfTracksToHCALs(_currentblock,_currentlinks,primgsf.first);
     auto notmatched = std::partition(HCALbegin,HCALend,gsfTracksToHCALs);    
     for( auto hcal = HCALbegin; hcal != notmatched; ++hcal ) { 
       const PFClusterElement* elemascluster = 
@@ -1557,9 +1574,9 @@ PFEGammaAlgo::linkKFTrackToECAL(const KFFlaggedElement& kfflagged,
   auto ECALbegin = _splayedblock[reco::PFBlockElement::ECAL].begin();
   auto ECALend = _splayedblock[reco::PFBlockElement::ECAL].end();  
   NotCloserToOther<reco::PFBlockElement::TRACK,reco::PFBlockElement::ECAL>
-    kfTrackToECALs(_currentblock,kfflagged.first);      
+    kfTrackToECALs(_currentblock,_currentlinks,kfflagged.first);      
   NotCloserToOther<reco::PFBlockElement::GSF,reco::PFBlockElement::ECAL>
-    kfTrackGSFToECALs(_currentblock,kfflagged.first);
+    kfTrackGSFToECALs(_currentblock,_currentlinks,kfflagged.first);
   //get the ECAL elements not used and not closer to another KF
   auto notmatched_sc = std::partition(currentECAL.begin(),
 				      currentECAL.end(),
@@ -1614,7 +1631,7 @@ linkRefinableObjectBremTangentsToECAL(ProtoEGObject& RO) {
     auto ECALbegin = _splayedblock[reco::PFBlockElement::ECAL].begin();
     auto ECALend = _splayedblock[reco::PFBlockElement::ECAL].end();
     NotCloserToOther<reco::PFBlockElement::BREM,reco::PFBlockElement::ECAL>
-      BremToECALs(_currentblock,bremflagged.first);
+      BremToECALs(_currentblock,_currentlinks,bremflagged.first);
     // check for late brem using clusters already in the SC
     auto RSCBegin = RO.ecalclusters.begin();
     auto RSCEnd = RO.ecalclusters.end();
@@ -1683,16 +1700,16 @@ linkRefinableObjectConvSecondaryKFsToSecondaryKFs(ProtoEGObject& RO) {
   auto KFend   = _splayedblock[reco::PFBlockElement::TRACK].end();
   auto BeginROskfs = RO.secondaryKFs.begin();
   auto EndROskfs   = RO.secondaryKFs.end();  
-  auto ronotconv = std::partition(BeginROskfs,EndROskfs,isConversionTrack);
+  auto ronotconv = std::partition(BeginROskfs,EndROskfs,isConversionTrack<reco::PFBlockElementTrack>);
   size_t convkfs_end = std::distance(BeginROskfs,ronotconv);  
   for( size_t idx = 0; idx < convkfs_end; ++idx ) { 
     const std::vector<PFKFFlaggedElement>& secKFs = RO.secondaryKFs; //we want the entry at the index but we allocate to secondaryKFs in loop which invalidates all iterators, references and pointers, hence we need to get the entry fresh each time
     NotCloserToOther<reco::PFBlockElement::TRACK,
                      reco::PFBlockElement::TRACK,
                      true> 
-      TracksToTracks(_currentblock, secKFs[idx].first); 
+      TracksToTracks(_currentblock,_currentlinks, secKFs[idx].first); 
     auto notmatched = std::partition(KFbegin,KFend,TracksToTracks);    
-    notmatched = std::partition(KFbegin,notmatched,isConversionTrack);
+    notmatched = std::partition(KFbegin,notmatched,isConversionTrack<reco::PFBlockElementTrack>);    
     for( auto kf = KFbegin; kf != notmatched; ++kf ) {
       const reco::PFBlockElementTrack* elemaskf =
 	docast(const reco::PFBlockElementTrack*,kf->first);      
@@ -1713,9 +1730,9 @@ linkRefinableObjectECALToSingleLegConv(const pfEGHelpers::HeavyObjectCache* hoc,
     NotCloserToOther<reco::PFBlockElement::ECAL,
                      reco::PFBlockElement::TRACK,
                      true>
-      ECALToTracks(_currentblock,ecal.first);           
+      ECALToTracks(_currentblock,_currentlinks,ecal.first);           
     auto notmatchedkf  = std::partition(KFbegin,KFend,ECALToTracks);
-    auto notconvkf     = std::partition(KFbegin,notmatchedkf,isConversionTrack);
+    auto notconvkf     = std::partition(KFbegin,notmatchedkf,isConversionTrack<reco::PFBlockElementTrack>);
     // add identified KF conversion tracks
     for( auto kf = KFbegin; kf != notconvkf; ++kf ) {
       const reco::PFBlockElementTrack* elemaskf =
@@ -1752,7 +1769,7 @@ linkRefinableObjectSecondaryKFsToECAL(ProtoEGObject& RO) {
     NotCloserToOther<reco::PFBlockElement::TRACK,
                      reco::PFBlockElement::ECAL,
                      false>
-      TracksToECALwithCut(_currentblock,skf.first,1.5f);
+      TracksToECALwithCut(_currentblock,_currentlinks,skf.first,1.5f);
     auto notmatched = std::partition(ECALbegin,ECALend,TracksToECALwithCut);
     for( auto ecal = ECALbegin; ecal != notmatched; ++ecal ) {
       const reco::PFBlockElementCluster* elemascluster =
@@ -2093,9 +2110,9 @@ void PFEGammaAlgo::fillExtraInfo(const ProtoEGObject& RO,
     NotCloserToOther<reco::PFBlockElement::ECAL,
                      reco::PFBlockElement::TRACK,
                      true>
-      ECALToTracks(_currentblock,ecal.first);           
+      ECALToTracks(_currentblock,_currentlinks,ecal.first);           
     auto notmatchedkf  = std::partition(KFbegin,KFend,ECALToTracks);
-    auto notconvkf     = std::partition(KFbegin,notmatchedkf,isConversionTrack);
+    auto notconvkf     = std::partition(KFbegin,notmatchedkf,isConversionTrack<reco::PFBlockElementTrack>);
     // go through non-conv-identified kfs and check MVA to add conversions
     for( auto kf = notconvkf; kf != notmatchedkf; ++kf ) {      
       const reco::PFBlockElementTrack* elemaskf =
@@ -2369,7 +2386,7 @@ unlinkRefinableObjectKFandECALMatchedToHCAL(ProtoEGObject& RO,
        secd_kf != RO.secondaryKFs.end(); ++secd_kf ) {
     bool remove_this_kf = false;
     NotCloserToOther<reco::PFBlockElement::TRACK,reco::PFBlockElement::HCAL>
-      tracksToHCALs(_currentblock,secd_kf->first);
+      tracksToHCALs(_currentblock,_currentlinks,secd_kf->first);
     reco::TrackRef trkRef =   secd_kf->first->trackRef();
 
     bool goodTrack = PFTrackAlgoTools::isGoodForEGM(trkRef->algo());

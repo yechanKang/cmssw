@@ -69,6 +69,9 @@ def appendRPCChamberMaskerAtUnpacking(process):
                 muonRPCDigis = cms.PSet(initialSeed = cms.untracked.uint32(789342))
                 )
 
-        process.RawToDigiTask.add(process.preRPCDigis)
+        process.filteredRPCDigiSequence = cms.Sequence(process.preRPCDigis \
+                                                       + process.muonRPCDigis)
+        process.RawToDigi.replace(process.muonRPCDigis, \
+                                  process.filteredRPCDigiSequence)
 
     return process

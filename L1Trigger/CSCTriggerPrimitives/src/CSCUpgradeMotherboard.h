@@ -10,9 +10,10 @@
  *
  */
 
+#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "L1Trigger/CSCTriggerPrimitives/src/CSCMotherboard.h"
-#include "L1Trigger/CSCTriggerPrimitives/src/CSCUpgradeAnodeLCTProcessor.h"
-#include "L1Trigger/CSCTriggerPrimitives/src/CSCUpgradeCathodeLCTProcessor.h"
+#include "L1Trigger/CSCTriggerPrimitives/src/CSCUpgradeMotherboardLUT.h"
+#include "L1Trigger/CSCTriggerPrimitives/src/CSCUpgradeMotherboardLUTGenerator.h"
 
 // generic container type
 namespace{
@@ -30,6 +31,9 @@ template <class T>
 using matchesBX = std::map<int, std::vector<std::pair<unsigned int, T> > >;
 
 }
+
+class CSCGeometry;
+class CSCChamber;
 
 class CSCUpgradeMotherboard : public CSCMotherboard
 {
@@ -56,10 +60,7 @@ public:
     void clear();
 
     // array with stored LCTs
-    // 1st index: depth of pipeline that stores the ALCT and CLCT
-    // 2nd index: BX number of the ALCT-CLCT match in the matching window
-    // 3rd index: LCT number in the time bin
-    CSCCorrelatedLCTDigi data[CSCConstants::MAX_LCT_TBINS][CSCConstants::MAX_MATCH_WINDOW_SIZE][CSCConstants::MAX_LCTS_PER_CSC];
+    CSCCorrelatedLCTDigi data[CSCConstants::MAX_LCT_TBINS][15][2];
 
     // matching trigger window
     const unsigned int match_trig_window_size_;
@@ -106,26 +107,23 @@ public:
   void setupGeometry();
   void debugLUTs();
 
-  // run TMB with GEM pad clusters as input
-  void run(const CSCWireDigiCollection* wiredc,
-           const CSCComparatorDigiCollection* compdc) override;
-
-  /* readout the two best LCTs in this CSC */
-  std::vector<CSCCorrelatedLCTDigi> readoutLCTs() const override;
-
  protected:
-
-  void correlateLCTs(const CSCALCTDigi& bestALCT, const CSCALCTDigi& secondALCT,
-                     const CSCCLCTDigi& bestCLCT, const CSCCLCTDigi& secondCLCT,
-                     CSCCorrelatedLCTDigi& lct1, CSCCorrelatedLCTDigi& lct2) const;
-
-  Parity theParity;
 
   void setPrefIndex();
 
   /** for the case when more than 2 LCTs/BX are allowed;
       maximum match window = 15 */
   LCTContainer allLCTs;
+
+  /** Chamber id (trigger-type labels). */
+  unsigned theRegion;
+  unsigned theChamber;
+  Parity par;
+
+  /** SLHC: special configuration parameters for ME11 treatment. */
+  bool disableME1a, gangedME1a;
+
+  const CSCChamber* cscChamber;
 
   std::unique_ptr<CSCUpgradeMotherboardLUTGenerator> generator_;
 

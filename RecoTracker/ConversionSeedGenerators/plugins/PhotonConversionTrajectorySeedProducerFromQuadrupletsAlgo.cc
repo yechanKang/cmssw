@@ -76,7 +76,7 @@ analyze(const edm::Event & event, const edm::EventSetup &setup){
   ss.str("");
   ss << "\n++++++++++++++++++\n";
   ss << "seed collection size " << seedCollection->size();
-  for(auto const& tjS : *seedCollection){
+  BOOST_FOREACH(TrajectorySeed tjS,*seedCollection){
     po.print(ss, tjS);
   }
   edm::LogInfo("debugTrajSeedFromQuadruplets") << ss.str();
@@ -93,7 +93,7 @@ loop(){
   
   float ptMin=0.1;
   
-  for(auto const& primaryVertex : *vertexHandle){
+  BOOST_FOREACH(const reco::Vertex primaryVertex, *vertexHandle){
 
     //FIXME currnetly using the first primaryVertex, should loop on the promaryVertexes
     GlobalTrackingRegion region(ptMin

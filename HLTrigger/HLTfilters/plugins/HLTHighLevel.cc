@@ -11,6 +11,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <boost/foreach.hpp>
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -119,7 +120,7 @@ void HLTHighLevel::init(const edm::TriggerResults & result,
     }
   } else {
     // otherwise, expand wildcards in trigger names...
-    for(auto const& pattern : HLTPatterns_) {
+    BOOST_FOREACH(const std::string & pattern, HLTPatterns_) {
       if (edm::is_glob(pattern)) {
         // found a glob pattern, expand it
         std::vector< std::vector<std::string>::const_iterator > matches = edm::regexMatch(triggerNames.triggerNames(), pattern);
@@ -131,7 +132,7 @@ void HLTHighLevel::init(const edm::TriggerResults & result,
             edm::LogInfo("Configuration") << "requested pattern \"" << pattern <<  "\" does not match any HLT paths";
         } else {
           // store the matching patterns
-          for(auto const& match : matches)
+          BOOST_FOREACH(auto match, matches)
             HLTPathsByName_.push_back(*match);
         }
       } else {

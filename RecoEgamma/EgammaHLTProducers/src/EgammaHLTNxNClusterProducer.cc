@@ -199,14 +199,13 @@ void EgammaHLTNxNClusterProducer::makeNxNClusters(edm::Event &evt, const edm::Ev
   std::vector<DetId> usedXtals;
   
   // sort seed according to Energy
-  sort(seeds.begin(), seeds.end(), [](auto const& x, auto const& y){
-                                       return (x.energy() > y.energy());
-                                     });
+  sort(seeds.begin(), seeds.end(), ecalRecHitSort());
   
   
   
   for (std::vector<EcalRecHit>::iterator itseed=seeds.begin(); itseed!=seeds.end(); itseed++) {
     DetId seed_id = itseed->id();
+    std::vector<DetId>::const_iterator usedIds;
     
     std::vector<DetId>::iterator  itdet = find(usedXtals.begin(),usedXtals.end(),seed_id);
     if(itdet != usedXtals.end()) continue; 

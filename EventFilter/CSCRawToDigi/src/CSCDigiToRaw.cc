@@ -11,6 +11,7 @@
 #include "DataFormats/FEDRawData/interface/FEDRawData.h"
 #include "DataFormats/FEDRawData/interface/FEDNumbering.h"
 #include "boost/dynamic_bitset.hpp"
+#include "boost/foreach.hpp"
 #include "EventFilter/CSCRawToDigi/src/bitset_append.h"
 #include "DataFormats/FEDRawData/interface/FEDHeader.h"
 #include "DataFormats/FEDRawData/interface/FEDTrailer.h"
@@ -259,9 +260,9 @@ void CSCDigiToRaw::add(const CSCComparatorDigiCollection & comparatorDigis,
                        bool packEverything) const
 {
   add(clctDigis,fedInfo);
-  for (auto const& j  : comparatorDigis)
+  for (CSCComparatorDigiCollection::DigiRangeIterator j=comparatorDigis.begin(); j!=comparatorDigis.end(); ++j)
     {
-      CSCDetId cscDetId=j.first;
+      CSCDetId cscDetId=(*j).first;
       CSCEventData & cscData = findEventData(cscDetId, fedInfo);
       bool me1abCheck = fedInfo.formatVersion_ == 2013;
       if (packEverything || cscd2r::accept(cscDetId, clctDigis, clctWindowMin_, clctWindowMax_, me1abCheck))
@@ -269,23 +270,23 @@ void CSCDigiToRaw::add(const CSCComparatorDigiCollection & comparatorDigis,
           bool me1a = (cscDetId.station()==1) && (cscDetId.ring()==4);
 	  
 
-      for(auto digi = j.second.first; digi != j.second.second; ++digi)
+	  BOOST_FOREACH(CSCComparatorDigi digi, (*j).second)
           {
             if (fedInfo.formatVersion_ == 2013)
               {
                 // Move ME1/A comparators from CFEB=0 to CFEB=4 if this has not
                 // been done already.
-                if (me1a && digi->getStrip() <= 48)
+                if (me1a && digi.getStrip() <= 48)
                   {
-                    CSCComparatorDigi digi_corr(64+digi->getStrip(),
-                                                digi->getComparator(),
-                                                digi->getTimeBinWord());
+                    CSCComparatorDigi digi_corr(64+digi.getStrip(),
+                                                digi.getComparator(),
+                                                digi.getTimeBinWord());
                     cscData.add(digi_corr, cscDetId); 			// This version does ME11 strips swapping
   		    // cscData.add(digi_corr, cscDetId.layer());        // This one doesn't
                   }
                 else
                   {
-		    cscData.add(*digi, cscDetId);                   	// This version does ME11 strips swapping
+		    cscData.add(digi, cscDetId);                   	// This version does ME11 strips swapping
                     // cscData.add(digi, cscDetId.layer());        // This one doesn't
                   }
               }
@@ -293,16 +294,16 @@ void CSCDigiToRaw::add(const CSCComparatorDigiCollection & comparatorDigis,
               {
                 // Move ME1/A comparators from CFEB=0 to CFEB=4 if this has not
                 // been done already.
-                if (me1a && digi->getStrip() <= 16)
+                if (me1a && digi.getStrip() <= 16)
                   {
-                    CSCComparatorDigi digi_corr(64+digi->getStrip(),
-                                                digi->getComparator(),
-                                                digi->getTimeBinWord());
+                    CSCComparatorDigi digi_corr(64+digi.getStrip(),
+                                                digi.getComparator(),
+                                                digi.getTimeBinWord());
                     cscData.add(digi_corr, cscDetId.layer());
                   }
                 else
                   {
-                    cscData.add(*digi, cscDetId.layer());
+                    cscData.add(digi, cscDetId.layer());
                   }
               }
           }

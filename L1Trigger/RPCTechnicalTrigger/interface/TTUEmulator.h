@@ -11,8 +11,6 @@
 
 #include <map>
 #include <bitset>
-#include <array>
-#include <memory>
 
 /** @class TTUEmulator TTUEmulator.h
  *  
@@ -47,6 +45,8 @@ public:
   
   TTUEmulator( int, const char *, const char * , const char *, int );
   
+  virtual ~TTUEmulator( ); ///< Destructor
+  
   bool initialise();
   
   void emulate();
@@ -55,13 +55,13 @@ public:
   
   void processTtu( RPCInputSignal * , int );
   
-  void printinfo() const;
+  void printinfo();
   
   void setSpecifications( const TTUBoardSpecs *, const RBCBoardSpecs *);
   
   void clearTriggerResponse();
   
-  int mode() const {
+  int mode() {
     return m_mode;
   };
   
@@ -69,7 +69,7 @@ public:
     m_mode = mode;
   };
   
-  int line() const {
+  int line() {
     return m_line;
   };
   
@@ -79,7 +79,7 @@ public:
   
   int m_maxWheels;
   
-  std::array<RPCWheel,2> m_Wheels;
+  RPCWheel * m_Wheels;
   std::bitset<2> m_trigger;
   std::map<int, std::bitset<2> > m_triggerBx;
 
@@ -109,7 +109,7 @@ public:
     
   };
   
-  std::vector<TriggerResponse> m_triggerBxVec;
+  std::vector<TriggerResponse*> m_triggerBxVec;
   
 protected:
   
@@ -120,13 +120,13 @@ private:
   int m_mode;
   int m_line;
   
-  std::array<int,6>  m_wheelIds;
+  int * m_wheelIds;
   
   std::string m_logtype;
   
-  std::array<TTUInput,2>  m_ttuin;
+  TTUInput         * m_ttuin;
   
-  std::unique_ptr<TTUConfiguration> m_ttuconf;
+  TTUConfiguration * m_ttuconf;
   
   bool m_debug;
 

@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <functional>
 
 
 #include "CalibTracker/SiStripLorentzAngle/interface/SiStripLAProfileBooker.h"
@@ -46,7 +47,8 @@
 
 #include<list>
 
-class DetIdLess {
+class DetIdLess 
+  : public std::binary_function< const SiStripRecHit2D*,const SiStripRecHit2D*,bool> {
 public:
   
   DetIdLess() {}

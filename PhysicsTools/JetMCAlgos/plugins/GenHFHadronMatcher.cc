@@ -28,7 +28,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/global/EDProducer.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -38,7 +38,6 @@
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Utilities/interface/EDPutToken.h"
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
@@ -48,12 +47,15 @@
 
 #include "SimDataFormats/JetMatching/interface/JetFlavourInfoMatching.h"
 
+#include "SimGeneral/HepPDTRecord/interface/ParticleDataTable.h"
+
+
 
 //
 // class declaration
 //
 
-class GenHFHadronMatcher : public edm::global::EDProducer<>
+class GenHFHadronMatcher : public edm::EDProducer
 {
 public:
     explicit GenHFHadronMatcher ( const edm::ParameterSet& );
@@ -62,59 +64,49 @@ public:
     static void fillDescriptions ( edm::ConfigurationDescriptions& descriptions );
 
 private:
-    void produce( edm::StreamID, edm::Event&, const edm::EventSetup& ) const override;
+    void produce( edm::Event&, const edm::EventSetup& ) override;
 
     std::vector<int> findHadronJets( const reco::GenParticleCollection* genParticles, const reco::JetFlavourInfoMatchingCollection* jetFlavourInfos,
                                      std::vector<int> &hadIndex, std::vector<reco::GenParticle> &hadMothersGenPart, 
                                      std::vector<std::vector<int> > &hadMothersIndices, std::vector<int> &hadLeptonIndex, 
                                      std::vector<int> &hadLeptonHadIndex, std::vector<int> &hadLeptonViaTau, 
-                                     std::vector<int> &hadFlavour, std::vector<int> &hadFromTopWeakDecay, std::vector<int> &hadBHadronId ) const;
+                                     std::vector<int> &hadFlavour, std::vector<int> &hadFromTopWeakDecay, std::vector<int> &hadBHadronId );
     int analyzeMothers( const reco::Candidate* thisParticle, int& topDaughterQId, int& topBarDaughterQId, 
                         std::vector<const reco::Candidate*> &hadMothers, std::vector<std::vector<int> > &hadMothersIndices, 
-                        std::set<const reco::Candidate*> *analyzedParticles, const int prevPartIndex ) const;
-    bool putMotherIndex( std::vector<std::vector<int> > &hadMothersIndices, int partIndex, int mothIndex ) const;
-    bool isHadron( const int flavour, const reco::Candidate* thisParticle ) const;
-    bool isHadronPdgId( const int flavour, const int pdgId ) const;
-    bool isMesonPdgId( const int flavour, const int pdgId ) const;
-    bool isBaryonPdgId( const int flavour, const int pdgId ) const;
-    int flavourSign( const int pdgId ) const;
-    bool hasHadronDaughter( const int flavour, const reco::Candidate* thisParticle ) const;
-    int idInList( std::vector<const reco::Candidate*> particleList, const reco::Candidate* particle ) const;
-    int idInList( std::vector<int> list, const int value ) const;
+                        std::set<const reco::Candidate*> *analyzedParticles, const int prevPartIndex );
+    bool putMotherIndex( std::vector<std::vector<int> > &hadMothersIndices, int partIndex, int mothIndex );
+    bool isHadron( const int flavour, const reco::Candidate* thisParticle );
+    bool isHadronPdgId( const int flavour, const int pdgId );
+    bool isMesonPdgId( const int flavour, const int pdgId );
+    bool isBaryonPdgId( const int flavour, const int pdgId );
+    int flavourSign( const int pdgId );
+    bool hasHadronDaughter( const int flavour, const reco::Candidate* thisParticle );
+    int idInList( std::vector<const reco::Candidate*> particleList, const reco::Candidate* particle );
+    int idInList( std::vector<int> list, const int value );
     int findInMothers( int idx, std::vector<int> &mothChains, const std::vector<std::vector<int> > &hadMothersIndices,
                        const std::vector<reco::GenParticle> &hadMothers, int status, int pdgId, bool pdgAbs,
-                       int stopId, int firstLast, bool verbose ) const;
-    bool isNeutralPdg( int pdgId ) const;
+                       int stopId, int firstLast, bool verbose );
+    bool isNeutralPdg( int pdgId );
 
-    bool checkForLoop( std::vector<const reco::Candidate*> &particleChain, const reco::Candidate* particle ) const;
+    bool checkForLoop( std::vector<const reco::Candidate*> &particleChain, const reco::Candidate* particle );
     std::string getParticleName( int id ) const;
 
     bool fixExtraSameFlavours( const unsigned int hadId, const std::vector<int> &hadIndices, 
                                const std::vector<reco::GenParticle> &hadMothers, const std::vector<std::vector<int> > &hadMothersIndices, 
                                const std::vector<int> &isFromTopWeakDecay, const std::vector<std::vector<int> > &LastQuarkIds, 
                                const std::vector<std::vector<int> > &LastQuarkMotherIds, std::vector<int> &lastQuarkIndices, 
-                               std::vector<int> &hadronFlavour, std::set<int> &checkedHadronIds, const int lastQuarkIndex ) const;
+                               std::vector<int> &hadronFlavour, std::set<int> &checkedHadronIds, const int lastQuarkIndex );
 
     // ----------member data ---------------------------
-    const edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
-    const edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
-    const int flavour_;
-    const bool noBBbarResonances_;
-    const bool onlyJetClusteredHadrons_;
+    edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
+    edm::EDGetTokenT<reco::JetFlavourInfoMatchingCollection> jetFlavourInfosToken_;
+    int flavour_;
+    bool noBBbarResonances_;
+    bool onlyJetClusteredHadrons_;
 
-    const std::string flavourStr_;
-    const edm::EDPutTokenT< std::vector<reco::GenParticle> > plusMothersToken_;
-    const edm::EDPutTokenT< std::vector< std::vector<int> > > plusMothersIndicesToken_;
-    const edm::EDPutTokenT< std::vector<int> > indexToken_;
-    const edm::EDPutTokenT< std::vector<int> > flavourToken_;
-    const edm::EDPutTokenT< std::vector<int> > jetIndexToken_;
-    const edm::EDPutTokenT< std::vector<int> > leptonIndexToken_;
-    const edm::EDPutTokenT< std::vector<int> > leptonHadronIndexToken_;
-    const edm::EDPutTokenT< std::vector<int> > leptonViaTauToken_;
-    const edm::EDPutTokenT< std::vector<int> > fromTopWeakDecayToken_;
-    const edm::EDPutTokenT< std::vector<int> > bHadronIdToken_;
+    std::string flavourStr_;  // Name of the flavour specified in config file
 
-
+    edm::ESHandle<ParticleDataTable> pdt_;
 };
 
 //
@@ -137,37 +129,34 @@ private:
 * For mesons this means an inversion with respect to the PDG definition, as mesons actually contain anti-b-quarks and anti-mesons contain b-quarks.
 *
 */
-namespace {
-  std::string flavourName(int flavour) {
-    if ( flavour==5 ) {
-        return "B";
-    } else if ( flavour==4 ) {
-        return "C";
-    }
-    edm::LogError ( "GenHFHadronMatcher" ) << "Flavour option must be 4 (c-jet) or 5 (b-jet), but is: " << flavour << ". Correct this!";
-    return std::string();
-  }
-}
-
 GenHFHadronMatcher::GenHFHadronMatcher ( const edm::ParameterSet& cfg ):
 genParticlesToken_(consumes<reco::GenParticleCollection>(cfg.getParameter<edm::InputTag>("genParticles"))),
-jetFlavourInfosToken_(consumes<reco::JetFlavourInfoMatchingCollection>(cfg.getParameter<edm::InputTag>("jetFlavourInfos"))),
-flavour_{std::abs(cfg.getParameter<int> ( "flavour" ))},
-noBBbarResonances_{cfg.getParameter<bool> ( "noBBbarResonances" )},
-onlyJetClusteredHadrons_{cfg.getParameter<bool> ( "onlyJetClusteredHadrons" )},
-flavourStr_{flavourName(flavour_)},
-plusMothersToken_{produces< std::vector<reco::GenParticle> > ( "gen"+flavourStr_+"HadPlusMothers" )}, // All mothers in all decay chains above any hadron of specified flavour
-plusMothersIndicesToken_{produces< std::vector< std::vector<int> > > ( "gen"+flavourStr_+"HadPlusMothersIndices" )}, // Indices of mothers of each hadMother
-indexToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadIndex" )}, // Index of hadron in the vector of hadMothers
-flavourToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadFlavour" )}, // PdgId of the first non-b(c) quark mother with sign corresponding to hadron charge
-jetIndexToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadJetIndex" )}, // Index of genJet matched to each hadron by jet clustering algorithm
-leptonIndexToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadLeptonIndex" )}, // Index of lepton found among the hadron decay products in the list of mothers
-leptonHadronIndexToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadLeptonHadronIndex" )}, // Index of hadron the lepton is associated to
-leptonViaTauToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadLeptonViaTau" )}, // Whether lepton comes directly from hadron or via tau decay
-fromTopWeakDecayToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadFromTopWeakDecay" )}, // Tells whether the hadron appears in the chain after top decay
-bHadronIdToken_{produces< std::vector<int> > ( "gen"+flavourStr_+"HadBHadronId" )} // Index of a b-hadron which the current hadron comes from (for c-hadrons)
+jetFlavourInfosToken_(consumes<reco::JetFlavourInfoMatchingCollection>(cfg.getParameter<edm::InputTag>("jetFlavourInfos")))
 {
+    flavour_           = cfg.getParameter<int> ( "flavour" );
+    noBBbarResonances_ = cfg.getParameter<bool> ( "noBBbarResonances" );
+    onlyJetClusteredHadrons_ = cfg.getParameter<bool> ( "onlyJetClusteredHadrons" );
+    
+    flavour_ = std::abs( flavour_ ); // Make flavour independent of sign given in configuration
+    if ( flavour_==5 ) {
+        flavourStr_="B";
+    } else if ( flavour_==4 ) {
+        flavourStr_="C";
+    } else {
+        edm::LogError ( "GenHFHadronMatcher" ) << "Flavour option must be 4 (c-jet) or 5 (b-jet), but is: " << flavour_ << ". Correct this!";
+    }
+
     // Hadron matching products
+    produces< std::vector<reco::GenParticle> > ( "gen"+flavourStr_+"HadPlusMothers" ); // All mothers in all decay chains above any hadron of specified flavour
+    produces< std::vector< std::vector<int> > > ( "gen"+flavourStr_+"HadPlusMothersIndices" ); // Indices of mothers of each hadMother
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadIndex" ); // Index of hadron in the vector of hadMothers
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadFlavour" ); // PdgId of the first non-b(c) quark mother with sign corresponding to hadron charge
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadJetIndex" ); // Index of genJet matched to each hadron by jet clustering algorithm
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadLeptonIndex" ); // Index of lepton found among the hadron decay products in the list of mothers
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadLeptonHadronIndex" ); // Index of hadron the lepton is associated to
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadLeptonViaTau" ); // Whether lepton comes directly from hadron or via tau decay
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadFromTopWeakDecay" ); // Tells whether the hadron appears in the chain after top decay
+    produces< std::vector<int> > ( "gen"+flavourStr_+"HadBHadronId" ); // Index of a b-hadron which the current hadron comes from (for c-hadrons)
 }
 
 GenHFHadronMatcher::~GenHFHadronMatcher()
@@ -198,8 +187,10 @@ void GenHFHadronMatcher::fillDescriptions ( edm::ConfigurationDescriptions& desc
 //
 
 // ------------ method called to produce the data  ------------
-void GenHFHadronMatcher::produce ( edm::StreamID, edm::Event& evt, const edm::EventSetup& setup ) const
+void GenHFHadronMatcher::produce ( edm::Event& evt, const edm::EventSetup& setup )
 {
+    setup.getData ( pdt_ );
+
     using namespace edm;
 
     edm::Handle<reco::GenParticleCollection> genParticles;
@@ -209,30 +200,30 @@ void GenHFHadronMatcher::produce ( edm::StreamID, edm::Event& evt, const edm::Ev
     evt.getByToken(jetFlavourInfosToken_, jetFlavourInfos);
     
     // Defining adron matching variables
-    std::vector<reco::GenParticle> hadMothers;
-    std::vector<std::vector<int>> hadMothersIndices;
-    std::vector<int> hadIndex;
-    std::vector<int> hadFlavour;
-    std::vector<int> hadJetIndex;
-    std::vector<int> hadLeptonIndex;
-    std::vector<int> hadLeptonHadIndex;
-    std::vector<int> hadLeptonViaTau;
-    std::vector<int> hadFromTopWeakDecay;
-    std::vector<int> hadBHadronId;
+    auto hadMothers = std::make_unique<std::vector<reco::GenParticle> >();
+    auto hadMothersIndices = std::make_unique<std::vector<std::vector<int> > >();
+    auto hadIndex = std::make_unique<std::vector<int> >();
+    auto hadFlavour = std::make_unique<std::vector<int> >();
+    auto hadJetIndex = std::make_unique<std::vector<int> >();
+    auto hadLeptonIndex = std::make_unique<std::vector<int> >();
+    auto hadLeptonHadIndex = std::make_unique<std::vector<int> >();
+    auto hadLeptonViaTau = std::make_unique<std::vector<int> >();
+    auto hadFromTopWeakDecay = std::make_unique<std::vector<int> >();
+    auto hadBHadronId = std::make_unique<std::vector<int> >();
     
-    hadJetIndex = findHadronJets (genParticles.product(), jetFlavourInfos.product(), hadIndex, hadMothers, hadMothersIndices, hadLeptonIndex, hadLeptonHadIndex, hadLeptonViaTau, hadFlavour, hadFromTopWeakDecay, hadBHadronId );
+    *hadJetIndex = findHadronJets (genParticles.product(), jetFlavourInfos.product(), *hadIndex, *hadMothers, *hadMothersIndices, *hadLeptonIndex, *hadLeptonHadIndex, *hadLeptonViaTau, *hadFlavour, *hadFromTopWeakDecay, *hadBHadronId );
 
     // Putting products to the event
-    evt.emplace(plusMothersToken_, std::move(hadMothers));
-    evt.emplace(plusMothersIndicesToken_, std::move(hadMothersIndices));
-    evt.emplace(indexToken_, std::move(hadIndex));
-    evt.emplace(flavourToken_, std::move(hadFlavour));
-    evt.emplace(jetIndexToken_, std::move(hadJetIndex));
-    evt.emplace(leptonIndexToken_, std::move(hadLeptonIndex));
-    evt.emplace(leptonHadronIndexToken_, std::move(hadLeptonHadIndex));
-    evt.emplace(leptonViaTauToken_, std::move(hadLeptonViaTau));
-    evt.emplace(fromTopWeakDecayToken_, std::move(hadFromTopWeakDecay));
-    evt.emplace(bHadronIdToken_, std::move(hadBHadronId));
+    evt.put(std::move(hadMothers),         "gen"+flavourStr_+"HadPlusMothers" );
+    evt.put(std::move(hadMothersIndices),  "gen"+flavourStr_+"HadPlusMothersIndices" );
+    evt.put(std::move(hadIndex),           "gen"+flavourStr_+"HadIndex" );
+    evt.put(std::move(hadFlavour),         "gen"+flavourStr_+"HadFlavour" );
+    evt.put(std::move(hadJetIndex),        "gen"+flavourStr_+"HadJetIndex" );
+    evt.put(std::move(hadLeptonIndex),     "gen"+flavourStr_+"HadLeptonIndex" );
+    evt.put(std::move(hadLeptonHadIndex),  "gen"+flavourStr_+"HadLeptonHadronIndex" );
+    evt.put(std::move(hadLeptonViaTau),    "gen"+flavourStr_+"HadLeptonViaTau" );
+    evt.put(std::move(hadFromTopWeakDecay),"gen"+flavourStr_+"HadFromTopWeakDecay" );
+    evt.put(std::move(hadBHadronId),       "gen"+flavourStr_+"HadBHadronId" );
 }
 
 
@@ -264,7 +255,7 @@ std::vector<int> GenHFHadronMatcher::findHadronJets ( const reco::GenParticleCol
                                                       std::vector<reco::GenParticle> &hadMothers, std::vector<std::vector<int> > &hadMothersIndices, 
                                                       std::vector<int> &hadLeptonIndex, std::vector<int> &hadLeptonHadIndex, 
                                                       std::vector<int> &hadLeptonViaTau, std::vector<int> &hadFlavour, 
-                                                      std::vector<int> &hadFromTopWeakDecay, std::vector<int> &hadBHadronId ) const
+                                                      std::vector<int> &hadFromTopWeakDecay, std::vector<int> &hadBHadronId )
 {
     std::vector<int> hadJetIndex;
     std::vector<const reco::Candidate*> hadMothersCand;
@@ -327,7 +318,7 @@ std::vector<int> GenHFHadronMatcher::findHadronJets ( const reco::GenParticleCol
             leptonMother = leptonMother->mother();
         }
         // Skipping this lepton if its mother is not a proper hadron
-        if(leptonMother == nullptr or !isHadron(flavour_, leptonMother)) continue;
+        if(!isHadron(flavour_, leptonMother)) continue;
         // Finding the index of this hadron in the list of analysed particles
         size_t leptonHadronParticleIndex = std::find(hadMothersCand.begin(), hadMothersCand.end(), leptonMother) - hadMothersCand.begin();
         if(leptonHadronParticleIndex >= hadMothersCand.size()) continue;
@@ -460,7 +451,7 @@ std::vector<int> GenHFHadronMatcher::findHadronJets ( const reco::GenParticleCol
 *
 * @returns the index of the particle in the list [-1 if particle not found]
 */
-int GenHFHadronMatcher::idInList ( std::vector<const reco::Candidate*> particleList, const reco::Candidate* particle ) const
+int GenHFHadronMatcher::idInList ( std::vector<const reco::Candidate*> particleList, const reco::Candidate* particle )
 {
     const unsigned int position = std::find(particleList.begin(), particleList.end(), particle) - particleList.begin();
     if( position >= particleList.size() ) return -1;
@@ -468,7 +459,7 @@ int GenHFHadronMatcher::idInList ( std::vector<const reco::Candidate*> particleL
     return position;
 }
 
-int GenHFHadronMatcher::idInList ( std::vector<int> list, const int value ) const
+int GenHFHadronMatcher::idInList ( std::vector<int> list, const int value )
 {
     const unsigned int position = std::find(list.begin(), list.end(), value) - list.begin();
     if( position >= list.size() ) return -1;
@@ -485,7 +476,7 @@ int GenHFHadronMatcher::idInList ( std::vector<int> list, const int value ) cons
 *
 * @returns whether the particle is a hadron of specified flavour
 */
-bool GenHFHadronMatcher::isHadron ( const int flavour, const reco::Candidate* thisParticle ) const
+bool GenHFHadronMatcher::isHadron ( const int flavour, const reco::Candidate* thisParticle )
 {
     return isHadronPdgId(flavour, thisParticle->pdgId());
 }
@@ -499,7 +490,7 @@ bool GenHFHadronMatcher::isHadron ( const int flavour, const reco::Candidate* th
 *
 * @returns true if the pdgId represents a hadron of specified flavour
 */
-bool GenHFHadronMatcher::isHadronPdgId ( const int flavour, const int pdgId ) const
+bool GenHFHadronMatcher::isHadronPdgId ( const int flavour, const int pdgId )
 {
     if( isBaryonPdgId(flavour, pdgId) || isMesonPdgId(flavour, pdgId) ) return true;
     
@@ -515,7 +506,7 @@ bool GenHFHadronMatcher::isHadronPdgId ( const int flavour, const int pdgId ) co
 *
 * @returns true if the pdgId represents a meson of specified flavour
 */
-bool GenHFHadronMatcher::isMesonPdgId ( const int flavour, const int pdgId ) const
+bool GenHFHadronMatcher::isMesonPdgId ( const int flavour, const int pdgId )
 {
     const int flavour_abs = std::abs(flavour);
     if(flavour_abs != 5 && flavour_abs != 4) return false;
@@ -539,7 +530,7 @@ bool GenHFHadronMatcher::isMesonPdgId ( const int flavour, const int pdgId ) con
 *
 * @returns true if the pdgId represents a baryon of specified flavour
 */
-bool GenHFHadronMatcher::isBaryonPdgId ( const int flavour, const int pdgId ) const
+bool GenHFHadronMatcher::isBaryonPdgId ( const int flavour, const int pdgId )
 {
     const int flavour_abs = std::abs(flavour);
     if(flavour_abs != 5 && flavour_abs != 4) return false;
@@ -558,7 +549,7 @@ bool GenHFHadronMatcher::isBaryonPdgId ( const int flavour, const int pdgId ) co
 *
 * @returns +1/-1/0  matter/antimatter/undefined
 */
-int GenHFHadronMatcher::flavourSign ( const int pdgId ) const
+int GenHFHadronMatcher::flavourSign ( const int pdgId )
 {
     int flavourSign = pdgId / std::abs(pdgId);
     // B mesons have opposite sign
@@ -578,7 +569,7 @@ int GenHFHadronMatcher::flavourSign ( const int pdgId ) const
 *
 * @returns whether the particle has a hadron among its daughters
 */
-bool GenHFHadronMatcher::hasHadronDaughter ( const int flavour, const reco::Candidate* thisParticle ) const
+bool GenHFHadronMatcher::hasHadronDaughter ( const int flavour, const reco::Candidate* thisParticle )
 {
     // Looping through daughters of the particle
     bool hasDaughter = false;
@@ -611,7 +602,7 @@ bool GenHFHadronMatcher::hasHadronDaughter ( const int flavour, const reco::Cand
 *
 * @returns index of hadron in the hadMothers list [-1 if no hadron found]
 */
-int GenHFHadronMatcher::analyzeMothers ( const reco::Candidate* thisParticle, int& topDaughterQId, int& topBarDaughterQId, std::vector<const reco::Candidate*> &hadMothers, std::vector<std::vector<int> > &hadMothersIndices, std::set<const reco::Candidate*> *analyzedParticles, const int prevPartIndex ) const
+int GenHFHadronMatcher::analyzeMothers ( const reco::Candidate* thisParticle, int& topDaughterQId, int& topBarDaughterQId, std::vector<const reco::Candidate*> &hadMothers, std::vector<std::vector<int> > &hadMothersIndices, std::set<const reco::Candidate*> *analyzedParticles, const int prevPartIndex )
 {
     // Getting the index of the particle which is a hadron in the first call
     int hadronIndex=-1;	// Index of the hadron that is returned by this function
@@ -705,7 +696,7 @@ int GenHFHadronMatcher::analyzeMothers ( const reco::Candidate* thisParticle, in
 * 
 * @returns whether the particle index was alreade in the list
 */
-bool GenHFHadronMatcher::putMotherIndex ( std::vector<std::vector<int> > &hadMothersIndices, int partIndex, int mothIndex ) const
+bool GenHFHadronMatcher::putMotherIndex ( std::vector<std::vector<int> > &hadMothersIndices, int partIndex, int mothIndex )
 {
     // Putting vector of mothers indices for the given particle
     bool inList=false;
@@ -760,7 +751,7 @@ bool GenHFHadronMatcher::putMotherIndex ( std::vector<std::vector<int> > &hadMot
 
 int GenHFHadronMatcher::findInMothers ( int idx, std::vector<int> &mothChains, const std::vector<std::vector<int> > &hadMothersIndices,
                                         const std::vector<reco::GenParticle> &hadMothers, int status, int pdgId, bool pdgAbs=false, 
-                                        int stopId=-1, int firstLast=0, bool verbose=false) const
+                                        int stopId=-1, int firstLast=0, bool verbose=false)
 {
     int foundStopId = -1;
     int pdg_1 = hadMothers.at(idx).pdgId();
@@ -879,7 +870,7 @@ int GenHFHadronMatcher::findInMothers ( int idx, std::vector<int> &mothChains, c
 *
 * @returns if the particle has a hadron among its daughters
 */
-bool GenHFHadronMatcher::isNeutralPdg ( int pdgId ) const
+bool GenHFHadronMatcher::isNeutralPdg ( int pdgId )
 {
     const int neutralPdgs_array[] = {9, 21, 22, 23, 25};
     const std::vector<int> neutralPdgs( neutralPdgs_array, neutralPdgs_array + sizeof(neutralPdgs_array) / sizeof(int) );
@@ -908,7 +899,7 @@ bool GenHFHadronMatcher::fixExtraSameFlavours(
     const std::vector<std::vector<int> > &hadMothersIndices, const std::vector<int> &isFromTopWeakDecay, 
     const std::vector<std::vector<int> > &LastQuarkIds, const std::vector<std::vector<int> > &LastQuarkMotherIds, 
     std::vector<int> &lastQuarkIndices, std::vector<int> &hadronFlavour, 
-    std::set<int> &checkedHadronIds, const int lastQuarkIndex) const
+    std::set<int> &checkedHadronIds, const int lastQuarkIndex)
 {
     if(checkedHadronIds.count(hadId) != 0) return false;      // Hadron already checked previously and should be skipped
     checkedHadronIds.insert(hadId);                           // Putting hadron to the list of checked ones in this run

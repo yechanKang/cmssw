@@ -39,10 +39,7 @@ static long algorithm( Detector& /* description */,
   vector<double> center      = args.value<vector<double> >("Center");
   vector<double> rotateSolid = args.value<vector<double> >("RotateSolid");
   Volume         mother      = ns.volume(args.parentName());
-  string         childName   = args.value<string>("ChildName");
-  if( strchr( childName.c_str(), NAMESPACE_SEP ) == nullptr )
-    childName = ns.name() + childName;
-  Volume         child       = ns.volume( childName );
+  Volume         child       = ns.volume(args.value<string>("ChildName"));
 
   double         delta = 0e0;
   

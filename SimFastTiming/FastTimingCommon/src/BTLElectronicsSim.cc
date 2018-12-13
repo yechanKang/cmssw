@@ -10,8 +10,7 @@ using namespace mtd;
 
 BTLElectronicsSim::BTLElectronicsSim(const edm::ParameterSet& pset) :
   debug_( pset.getUntrackedParameter<bool>("debug",false) ),
-  bxTime_( pset.getParameter<double>("bxTime") ),
-  testBeamMIPTimeRes_( pset.getParameter<double>("TestBeamMIPTimeRes") ),
+  bxTime_(pset.getParameter<double>("bxTime") ),
   ScintillatorRiseTime_( pset.getParameter<double>("ScintillatorRiseTime") ),
   ScintillatorDecayTime_( pset.getParameter<double>("ScintillatorDecayTime") ),
   ChannelTimeOffset_( pset.getParameter<double>("ChannelTimeOffset") ),
@@ -54,7 +53,7 @@ void BTLElectronicsSim::run(const mtd::MTDSimHitDataAccumulator& input,
   for(MTDSimHitDataAccumulator::const_iterator it=input.begin();
       it!=input.end();
       it++) {
-
+    
     chargeColl.fill(0.f);
     toa1.fill(0.f);
     toa2.fill(0.f);
@@ -89,27 +88,13 @@ void BTLElectronicsSim::run(const mtd::MTDSimHitDataAccumulator& input,
 
 
       // --- Uncertainty due to the fluctuations of the n-th photon arrival time:
-      if ( testBeamMIPTimeRes_ > 0. ) {
-	// In this case the time resolution is parametrized from the testbeam.
-	// The same parameterization is used for both thresholds.
-	float sigma = testBeamMIPTimeRes_/sqrt(Npe);
-	float smearing_stat_thr1 = CLHEP::RandGaussQ::shoot(hre, 0., sigma);
-	float smearing_stat_thr2 = CLHEP::RandGaussQ::shoot(hre, 0., sigma);
-
-	finalToA1 += smearing_stat_thr1;
-	finalToA2 += smearing_stat_thr2;
-
-      }
-      else {
-	// In this case the time resolution is taken from the literature.
-	// The fluctuations due to the first TimeThreshold1_ p.e. are common to both times
-	float smearing_stat_thr1 = CLHEP::RandGaussQ::shoot(hre, 0.,
-				   ScintillatorDecayTime_*sqrt(sigma2_pe(TimeThreshold1_,Npe)));
-	float smearing_stat_thr2 = CLHEP::RandGaussQ::shoot(hre, 0.,
-			           ScintillatorDecayTime_*sqrt(sigma2_pe(TimeThreshold2_-TimeThreshold1_,Npe)));
-	finalToA1 += smearing_stat_thr1;
-	finalToA2 += smearing_stat_thr1 + smearing_stat_thr2;
-      }
+      //     the fluctuations due to the first TimeThreshold1_ p.e. are common to both times
+      float smearing_stat_thr1 = CLHEP::RandGaussQ::shoot(hre, 0., 
+				 ScintillatorDecayTime_*sqrt(sigma2_pe(TimeThreshold1_,Npe)));
+      float smearing_stat_thr2 = CLHEP::RandGaussQ::shoot(hre, 0.,
+			         ScintillatorDecayTime_*sqrt(sigma2_pe(TimeThreshold2_-TimeThreshold1_,Npe)));
+      finalToA1 += smearing_stat_thr1;
+      finalToA2 += smearing_stat_thr1 + smearing_stat_thr2;
 
 
       // --- Add in quadrature the uncertainties due to the SiPM timing resolution, the SiPM DCR,
@@ -127,16 +112,23 @@ void BTLElectronicsSim::run(const mtd::MTDSimHitDataAccumulator& input,
       finalToA1 += cosPhi_*smearing_thr1_uncorr + sinPhi_*smearing_thr2_uncorr;
       finalToA2 += sinPhi_*smearing_thr1_uncorr + cosPhi_*smearing_thr2_uncorr;
 
-      chargeColl[i] = Npe*Npe_to_pC_; // the p.e. number is here converted to pC
+
+      // --- Fill the time and charge arrays
+      const unsigned int ibucket = std::floor( finalToA1/bxTime_ );
+      if ( (i+ibucket) >= chargeColl.size() ) continue;
       
-      toa1[i] = finalToA1;
-      toa2[i] = finalToA2;
+      chargeColl[i+ibucket] += Npe*Npe_to_pC_; // the p.e. number is here converted to pC
+      
+      if ( toa1[i+ibucket] == 0. || (finalToA1-ibucket*bxTime_) < toa1[i+ibucket] ){
+	toa1[i+ibucket] = finalToA1 - ibucket*bxTime_;
+	toa2[i+ibucket] = finalToA2 - ibucket*bxTime_;
+      }
 
     }
 
     //run the shaper to create a new data frame
-    BTLDataFrame rawDataFrame( it->first.detid_ );    
-    runTrivialShaper(rawDataFrame,chargeColl,toa1,toa2,it->first.row_, it->first.column_);
+    BTLDataFrame rawDataFrame( it->first );    
+    runTrivialShaper(rawDataFrame,chargeColl,toa1,toa2);
     updateOutput(output,rawDataFrame);
     
   }
@@ -147,8 +139,7 @@ void BTLElectronicsSim::run(const mtd::MTDSimHitDataAccumulator& input,
 void BTLElectronicsSim::runTrivialShaper(BTLDataFrame &dataFrame, 
 					 const mtd::MTDSimHitData& chargeColl,
 					 const mtd::MTDSimHitData& toa1,
-					 const mtd::MTDSimHitData& toa2,
-					 const uint8_t row, const uint8_t col) const {
+					 const mtd::MTDSimHitData& toa2) const {
     bool debug = debug_;
 #ifdef EDM_ML_DEBUG  
   for(int it=0; it<(int)(chargeColl.size()); it++) debug |= (chargeColl[it]>adcThreshold_fC_);
@@ -156,19 +147,16 @@ void BTLElectronicsSim::runTrivialShaper(BTLDataFrame &dataFrame,
     
   if(debug) edm::LogVerbatim("BTLElectronicsSim") << "[runTrivialShaper]" << std::endl;
   
-  //set new ADCs
+  //set new ADCs 
   for(int it=0; it<(int)(chargeColl.size()); it++) {
 
-    BTLSample newSample;
-    newSample.set(false,false,0,0,0,row,col);
-    
     //brute force saturation, maybe could to better with an exponential like saturation
     const uint32_t adc = std::min( (uint32_t) std::floor(chargeColl[it]/adcLSB_MIP_), adcBitSaturation_ );
     const uint32_t tdc_time1 = std::min( (uint32_t) std::floor(toa1[it]/toaLSB_ns_), tdcBitSaturation_);
     const uint32_t tdc_time2 = std::min( (uint32_t) std::floor(toa2[it]/toaLSB_ns_), tdcBitSaturation_);
 
-    newSample.set(chargeColl[it] > adcThreshold_MIP_,tdc_time1 == tdcBitSaturation_,
-		  tdc_time2,tdc_time1,adc,row,col);
+    BTLSample newSample;
+    newSample.set(chargeColl[it] > adcThreshold_MIP_,false,tdc_time2,tdc_time1,adc);
     dataFrame.setSample(it,newSample);
 
     if(debug) edm::LogVerbatim("BTLElectronicsSim") << adc << " (" 
@@ -185,13 +173,15 @@ void BTLElectronicsSim::runTrivialShaper(BTLDataFrame &dataFrame,
   
 void BTLElectronicsSim::updateOutput(BTLDigiCollection &coll,
 				     const BTLDataFrame& rawDataFrame) const {
-
+  int itIdx(9);
+  if(rawDataFrame.size()<=itIdx+2) return;
+  
   BTLDataFrame dataFrame( rawDataFrame.id() );
   dataFrame.resize(dfSIZE);
   bool putInEvent(false);
   for(int it=0;it<dfSIZE; ++it) {    
-    dataFrame.setSample(it, rawDataFrame[it]);
-    if(it==0) putInEvent = rawDataFrame[it].threshold();
+    dataFrame.setSample(it, rawDataFrame[itIdx-2+it]);
+    if(it==2) putInEvent = rawDataFrame[itIdx-2+it].threshold(); 
   }
 
   if(putInEvent) {

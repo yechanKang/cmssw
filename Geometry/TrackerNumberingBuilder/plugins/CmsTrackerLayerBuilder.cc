@@ -5,12 +5,13 @@
 #include "Geometry/TrackerNumberingBuilder/plugins/CmsTrackerStringBuilder.h"
 #include "Geometry/TrackerNumberingBuilder/plugins/CmsTrackerRodBuilder.h"
 #include "Geometry/TrackerNumberingBuilder/plugins/CmsTrackerLadderBuilder.h"
-#include "Geometry/TrackerNumberingBuilder/interface/trackerStablePhiSort.h"
+#include "Geometry/TrackerNumberingBuilder/plugins/TrackerStablePhiSort.h"
 #include "DataFormats/DetId/interface/DetId.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
 #include <vector>
 #include <bitset>
+#include <functional>
 
 void CmsTrackerLayerBuilder::buildComponent(DDFilteredView& fv, GeometricDet* g, const std::string s){
 
@@ -38,6 +39,8 @@ void CmsTrackerLayerBuilder::buildComponent(DDFilteredView& fv, GeometricDet* g,
 }
 
 void CmsTrackerLayerBuilder::sortNS(DDFilteredView& fv, GeometricDet* det){
+
+  const std::function<double(const GeometricDet*)> getPhiFunc{getPhi};
 
   GeometricDet::ConstGeometricDetContainer& comp = det->components();
 
@@ -89,10 +92,10 @@ void CmsTrackerLayerBuilder::sortNS(DDFilteredView& fv, GeometricDet* det){
       }
     }
 
-    trackerStablePhiSort(extneg.begin(), extneg.end(), getPhi);
-    trackerStablePhiSort(extpos.begin(), extpos.end(), getPhi);
-    trackerStablePhiSort(intneg.begin(), intneg.end(), getPhi);
-    trackerStablePhiSort(intpos.begin(), intpos.end(), getPhi);
+    TrackerStablePhiSort(extneg.begin(), extneg.end(), getPhiFunc);
+    TrackerStablePhiSort(extpos.begin(), extpos.end(), getPhiFunc);
+    TrackerStablePhiSort(intneg.begin(), intneg.end(), getPhiFunc);
+    TrackerStablePhiSort(intpos.begin(), intpos.end(), getPhiFunc);
 
     for(uint32_t i=0;i<intneg.size();i++){
       uint32_t temp=i+1;
@@ -144,8 +147,8 @@ void CmsTrackerLayerBuilder::sortNS(DDFilteredView& fv, GeometricDet* det){
       }
     }
 
-    trackerStablePhiSort(neg.begin(), neg.end(), getPhi);
-    trackerStablePhiSort(pos.begin(), pos.end(), getPhi);
+    TrackerStablePhiSort(neg.begin(), neg.end(), getPhiFunc);
+    TrackerStablePhiSort(pos.begin(), pos.end(), getPhiFunc);
     
     for(uint32_t i=0; i<neg.size();i++){      
       uint32_t temp = i+1;
@@ -165,8 +168,8 @@ void CmsTrackerLayerBuilder::sortNS(DDFilteredView& fv, GeometricDet* det){
     
   }else if(det->components().front()->type()== GeometricDet::ladder){
 
-    trackerStablePhiSort(comp.begin(), comp.end(), getPhi);
-
+    TrackerStablePhiSort(comp.begin(), comp.end(), getPhiFunc);
+	
     for(uint32_t i=0; i<comp.size();i++){
       det->component(i)->setGeographicalID(DetId(i+1));
     }    

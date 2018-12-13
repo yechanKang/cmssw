@@ -47,8 +47,9 @@ private:
   
   std::bitset<6> * m_layersignal[2];
 
-  std::unique_ptr<RBCLogic> m_logic;
+  RBCLogic            * m_logic;
   
+  LogicTool<RBCLogic> * m_logtool;
 
   bool m_debug;
     

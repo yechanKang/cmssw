@@ -62,6 +62,9 @@
 
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
 //
 // class decleration
 class MuonMCClassifier : public edm::EDProducer {

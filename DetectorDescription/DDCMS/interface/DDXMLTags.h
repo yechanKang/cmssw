@@ -26,7 +26,6 @@ namespace cms  {
   
   UNICODE(RotationSection);
   UNICODE(Rotation);
-  UNICODE(ReflectionRotation);
   UNICODE(RotationSequence);
   UNICODE(RotationByAxis);
   UNICODE(axis);
@@ -137,19 +136,6 @@ namespace cms  {
   UNICODE(ChildName);
   UNICODE(rChild);
   UNICODE(Translation);
-
-  UNICODE(SpecParSection);
-  UNICODE(SpecPar);
-  UNICODE(PartSelector);
-  UNICODE(Parameter);
-  UNICODE(path);
-  UNICODE(value);
-  
-  UNICODE(Division);
-  UNICODE(parent);
-  UNICODE(offset);
-  UNICODE(width);
-  UNICODE(nReplicas);
   
   UNICODE(Algorithm);
   UNICODE(String);
@@ -171,7 +157,6 @@ namespace cms  {
   UNICODE(debug_visattr);
   UNICODE(debug_includes);
   UNICODE(debug_algorithms);
-  UNICODE(debug_specpars);
   
   /// DD4hep specific
   UNICODE(open_geometry);
@@ -185,6 +170,6 @@ namespace cms  {
 #undef UNICODE // Do not miss this one!
 #include "XML/XMLTags.h"
 
-#define DD_CMU(a) ::cms::Unicode_##a
+#define _CMU(a) ::cms::Unicode_##a
 
 #endif 

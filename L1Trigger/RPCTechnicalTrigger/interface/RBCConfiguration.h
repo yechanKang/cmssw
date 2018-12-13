@@ -19,26 +19,18 @@
 
 class RBCConfiguration {
 public: 
-  RBCConfiguration():m_rbcboardspecs(nullptr) {}
-  RBCConfiguration(const RBCBoardSpecs * rbcspecs);
-  RBCConfiguration(const char * _logic);
-
-  RBCConfiguration(RBCConfiguration&&) = default;
-  RBCConfiguration& operator=(RBCConfiguration&&) = default;
-
-  virtual ~RBCConfiguration() = default;
+  virtual ~RBCConfiguration() {}
   virtual bool initialise()=0;
 
   virtual void preprocess(RBCInput &)=0;
+    
+  RBCLogicUnit  * m_rbclogic;
   
-  RBCLogicUnit* rbclogic() { return m_rbclogic.get();}
+  const RBCBoardSpecs * m_rbcboardspecs;
+  
+  RBCBoardSpecs::RBCBoardConfig * m_rbcconf;
   
 protected:
-  const RBCBoardSpecs * m_rbcboardspecs;
-  std::unique_ptr<RBCLogicUnit>  m_rbclogic;
-  
-  //RBCBoardSpecs::RBCBoardConfig * m_rbcconf;
-  
   
 private:
 

@@ -14,7 +14,7 @@
 #include <ios>
 #include <cmath>
 #include <vector>
-#include <memory>
+
 
 /** @class ProcessTestSignal ProcessTestSignal.h
  *  
@@ -27,7 +27,10 @@
  */
 class ProcessTestSignal : public ProcessInputSignal {
 public: 
-  explicit ProcessTestSignal( const char * );
+  /// Standard constructor
+  ProcessTestSignal( ) { }; 
+  
+  ProcessTestSignal( const char * );
   
   ~ProcessTestSignal( ) override; ///< Destructor
   
@@ -40,7 +43,7 @@ public:
   void reset();
   
   RPCInputSignal * retrievedata() override {
-    return  m_lbin.get();
+    return  m_lbin;
   };
   
   void mask() {};
@@ -52,11 +55,15 @@ private:
   
   void builddata();
   
-  std::ifstream  m_in;
+  std::ifstream * m_in;
   
-  std::unique_ptr<RPCInputSignal> m_lbin;
+  RPCData  * m_block;
   
-  std::vector<std::unique_ptr<RPCData>> m_vecdata;
+  RBCInput * m_rbcinput;
+  
+  RPCInputSignal * m_lbin;
+  
+  std::vector<RPCData*> m_vecdata;
   
   std::map<int,RBCInput*> m_data;
   

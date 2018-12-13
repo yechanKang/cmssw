@@ -121,8 +121,6 @@ def main(argv):
                           help="Name of sample as defined in skimProducer_cfg.py. Multiple inputs possible")
     parser.add_argument("-c", "--consecutive", action="store_true", dest="consecutive", default=False,
                           help="Do consecutive instead of parallel skims")
-    parser.add_argument("-n", "--ncores", action="store", dest="ncores", default=-1, type="int",
-                          help="Set maximum number of parallel skims to run")
     
     args = parser.parse_args()
     
@@ -137,15 +135,12 @@ def main(argv):
     
     args.samples = finalSamples
     
-    if args.ncores<0 or args.ncores > len(args.samples):
-        args.ncores = len(args.samples)
-    
     if len(args.samples) == 1 or args.consecutive:
         for sample in args.samples:
             doSkim(sample) 
     else:
         try:
-            pool = mp.Pool(args.ncores)
+            pool = mp.Pool(len(args.samples))
             pool.map_async(doSkim, args.samples)
             pool.close()
             pool.join()

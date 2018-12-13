@@ -30,6 +30,11 @@ namespace l1trigger {
   
   }
 
+  Counters::~Counters()
+  {
+    m_sector.clear();
+  }
+
   void Counters::evalCounters()
   {
   
@@ -70,13 +75,13 @@ namespace l1trigger {
 
   }
 
-  void Counters::printSummary() const
+  void Counters::printSummary()
   {
 
     std::cout << m_wheelid << std::endl;
     std::map<int,int>::iterator itr;
-    for(auto const& s :m_sector)
-      std::cout << s.first << ": " << s.second << '\t';
+    for(itr = m_sector.begin(); itr != m_sector.end(); ++itr)
+      std::cout << (*itr).first << ": " << (*itr).second << '\t';
     std::cout << '\n';
   
     std::cout << "total wheel: " 
@@ -90,8 +95,23 @@ namespace l1trigger {
 }
 
 RPCData::RPCData() {
+  
   m_wheel     = 10;
+  m_sec1      = new int[6];
+  m_sec2      = new int[6];
+  m_orsignals = new RBCInput[6];
+
 }
+//=============================================================================
+// Destructor
+//=============================================================================
+RPCData::~RPCData() {
+  
+  delete [] m_sec1;
+  delete [] m_sec2;
+  delete [] m_orsignals;
+  
+} 
 
 //=============================================================================
 
@@ -109,7 +129,7 @@ std::istream& operator>>(std::istream &istr , RPCData & rhs)
     
 }
 
-std::ostream& operator<<(std::ostream& ostr , RPCData const & rhs) 
+std::ostream& operator<<(std::ostream& ostr , RPCData & rhs) 
 {
   
   ostr << rhs.m_wheel << '\t';

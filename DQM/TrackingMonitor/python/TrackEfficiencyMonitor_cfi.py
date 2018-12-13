@@ -13,7 +13,7 @@ TrackEffMon = DQMEDAnalyzer('TrackEfficiencyMonitor',
     TKTrackCollection = cms.InputTag("rsWithMaterialTracksP5"),
     STATrackCollection = cms.InputTag("cosmicMuons"),
     trackEfficiency  = cms.bool(True),    
-    OutputMEsInRootFile = cms.bool(False),
+    OutputMEsInRootFile = cms.bool(True),
     OutputFileName = cms.string('MonitorTrackEfficiency.root'),
 
     FolderName = cms.string('Track/Efficiencies'),

@@ -31,7 +31,8 @@
 
 class DTLowQMatching  {
 public:
-  DTLowQMatching(L1MuDTChambPhContainer const* , L1MuDTChambPhContainer const& );
+  DTLowQMatching(L1MuDTChambPhContainer* , L1MuDTChambPhContainer );
+  ~DTLowQMatching() {};
 
   void run(const edm::EventSetup& c);
 
@@ -44,8 +45,8 @@ private:
 
   void Matching(int track_seg);
 
-  L1MuDTChambPhContainer const* m_phiDTDigis;
-  L1MuDTChambPhContainer const&  m_phiRPCDigis;
+  L1MuDTChambPhContainer* m_phiDTDigis;
+  L1MuDTChambPhContainer m_phiRPCDigis;
 //  L1MuDTChambPhContainer m_phiRPCDigis2;
   
   

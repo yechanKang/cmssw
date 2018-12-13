@@ -25,6 +25,8 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
 
 namespace leef {
   using Error = edm::ErrorSummaryEntry;
@@ -278,14 +280,14 @@ LogErrorEventFilter::endJob() {
 
         std::cout << "\n === SCOREBOARD PER RUN === " << std::endl;
         typedef std::pair<uint32_t, counter> hitRun;
-        for(auto const& hit : statsPerRun_) {
+        foreach(const hitRun &hit, statsPerRun_) {
             double fract = hit.second.second/double(hit.second.first + hit.second.second);
             printf("run %6d: fail %7zu, pass %7zu, fraction %7.3f%%%s\n", hit.first, hit.second.second, hit.second.first, fract*100., (fract >= thresholdPerRun_ ? " (run excluded from summary list)" : ""));
         }
  
         std::cout << "\n === SCOREBOARD PER LUMI === " << std::endl;
         typedef std::pair<std::pair<uint32_t,uint32_t>, counter> hitLumi;
-        for(auto const& hit : statsPerLumi_) {
+        foreach(const hitLumi &hit, statsPerLumi_) {
             double fract = hit.second.second/double(hit.second.first + hit.second.second);
             printf("run %6d, lumi %4d: fail %zu, pass %zu, fraction %7.3f%%%s\n", hit.first.first, hit.first.second, hit.second.second, hit.second.first, fract*100., (fract >= thresholdPerLumi_ ? " (lumi excluded from run list)" : ""));
         }
@@ -313,7 +315,7 @@ LogErrorEventFilter::filter(edm::StreamID, edm::Event & iEvent, const edm::Event
         return false;
     } 
 
-    for(auto const& err : *errors) {
+    foreach (const Error &err, *errors) {
         if (!modulesToWatch_.empty()     && (modulesToWatch_.count(err.module)       == 0)) continue;
         if (!categoriesToWatch_.empty()  && (categoriesToWatch_.count(err.category)  == 0)) continue;
         if (!modulesToIgnore_.empty()    && (modulesToIgnore_.count(err.module)      != 0)) continue;
@@ -350,7 +352,7 @@ LogErrorEventFilter::filter(edm::StreamID, edm::Event & iEvent, const edm::Event
 template<typename Collection> 
 void
 LogErrorEventFilter::increment(ErrorSet &scoreboard, Collection &list) {
-    for(auto const& err : list) {
+    foreach (const Error &err, list) {
         std::pair<ErrorSet::iterator, bool> result = scoreboard.insert(err);
         // need the const_cast as set elements are const
          if (!result.second) const_cast<unsigned int &>(result.first->count) += err.count;
@@ -369,7 +371,7 @@ LogErrorEventFilter::print(const Collection &errors) {
             setw(60) << left  << "------------------------------------------------------------"   << " " <<
             setw(10) << left  << "----------"                                                     << " " <<
             setw(9)  << right << "---------"                                                      << "\n";
-    for(auto const& err : errors) {
+    foreach (const Error &err, errors) {
         cout << setw(40) << left  << err.category           << " " <<
                 setw(60) << left  << err.module             << " " <<
                 setw(10) << left  << err.severity.getName() << " " <<

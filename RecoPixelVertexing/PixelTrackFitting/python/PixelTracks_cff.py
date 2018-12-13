@@ -64,17 +64,15 @@ pixelTracks = _pixelTracks.clone(
 )
 trackingLowPU.toModify(pixelTracks, SeedingHitSets = "pixelTracksHitTriplets")
 
-pixelTracksTask = cms.Task(
-    pixelTracksTrackingRegions,
-    pixelFitterByHelixProjections,
-    pixelTrackFilterByKinematics,
-    pixelTracksSeedLayers,
-    pixelTracksHitDoublets,
-    pixelTracksHitQuadruplets,
+pixelTracksSequence = cms.Sequence(
+    pixelTracksTrackingRegions +
+    pixelFitterByHelixProjections +
+    pixelTrackFilterByKinematics +
+    pixelTracksSeedLayers +
+    pixelTracksHitDoublets +
+    pixelTracksHitQuadruplets +
     pixelTracks
 )
-_pixelTracksTask_lowPU = pixelTracksTask.copy()
-_pixelTracksTask_lowPU.replace(pixelTracksHitQuadruplets, pixelTracksHitTriplets)
-trackingLowPU.toReplaceWith(pixelTracksTask, _pixelTracksTask_lowPU)
-
-pixelTracksSequence = cms.Sequence(pixelTracksTask)
+_pixelTracksSequence_lowPU = pixelTracksSequence.copy()
+_pixelTracksSequence_lowPU.replace(pixelTracksHitQuadruplets, pixelTracksHitTriplets)
+trackingLowPU.toReplaceWith(pixelTracksSequence, _pixelTracksSequence_lowPU)

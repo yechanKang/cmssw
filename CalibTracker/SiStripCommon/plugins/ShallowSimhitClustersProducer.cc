@@ -14,6 +14,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "boost/foreach.hpp"
 
 ShallowSimhitClustersProducer::ShallowSimhitClustersProducer(const edm::ParameterSet& iConfig)
   : clusters_token_( consumes< edmNew::DetSetVector<SiStripCluster> >(iConfig.getParameter<edm::InputTag>("Clusters"))),
@@ -67,7 +68,7 @@ produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	for(auto& simhit_token : simhits_tokens_) {
 		edm::Handle< std::vector<PSimHit> > simhits; 
 		iEvent.getByToken(simhit_token, simhits);
-    for(auto const& hit : *simhits ) {
+    BOOST_FOREACH( const PSimHit hit, *simhits ) {
       
       const uint32_t id = hit.detUnitId();
       const StripGeomDetUnit* theStripDet = dynamic_cast<const StripGeomDetUnit*>( theTrackerGeometry->idToDet( id ) );

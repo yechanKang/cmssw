@@ -175,7 +175,7 @@ fastSim.toModify(mixData,
             collectionDM = "MuonSimHitsMuonRPCHits",
         ),
         csc = dict(
-            labelSig = "mix:MuonSimHitsMuonCSCHits",
+            labelSig = "mix:MuonSimHitsMuonRPCHits",
             pileInputTag = "mix:MuonSimHitsMuonCSCHits",
             collectionDM = "MuonSimHitsMuonCSCHits",
         ),

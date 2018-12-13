@@ -34,6 +34,8 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include <boost/foreach.hpp>
+
 #include <TMath.h>
 
 #include <string>
@@ -264,10 +266,10 @@ void BoostedTauSeedsProducer::produce(edm::Event& evt, const edm::EventSetup& es
 
     // build JetToPFCandidateAssociation 
     // (key = subjet, value = collection of PFCandidates that are not constituents of subjet)
-    for(auto const& pfCandidate : pfCandidatesNotInSubjet1 ) {
+    BOOST_FOREACH( const reco::PFCandidateRef& pfCandidate, pfCandidatesNotInSubjet1 ) {
       selectedSubjetPFCandidateAssociationForIsolation->insert(subjetRef1, pfCandidate);
     }
-    for(auto const& pfCandidate : pfCandidatesNotInSubjet2 ) {
+    BOOST_FOREACH( const reco::PFCandidateRef& pfCandidate, pfCandidatesNotInSubjet2 ) {
       selectedSubjetPFCandidateAssociationForIsolation->insert(subjetRef2, pfCandidate);
     }
   }

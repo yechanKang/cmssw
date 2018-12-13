@@ -25,6 +25,8 @@ public:
   
   TTULogicUnit( const char * );
   
+  ~TTULogicUnit( ) override; ///< Destructor
+
   bool initialise();
   
   void setlogic( const char * );
@@ -45,8 +47,10 @@ private:
   
   std::string m_logtype;
   
-  std::unique_ptr<TTULogic> m_logic;
+  TTULogic             * m_logic;
   
+  LogicTool<TTULogic>  * m_logtool;
+
   bool m_debug;
     
 };

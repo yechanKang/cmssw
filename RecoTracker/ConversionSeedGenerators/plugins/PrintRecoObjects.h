@@ -12,6 +12,7 @@
 #include "DataFormats/Common/interface/DetSetVectorNew.h"
 
 #include <sstream>
+#include "boost/foreach.hpp"
 
 typedef edmNew::DetSet<SiStripCluster>::const_iterator ClusIter;
 typedef edmNew::DetSetVector<SiStripCluster> ClusterCollection;

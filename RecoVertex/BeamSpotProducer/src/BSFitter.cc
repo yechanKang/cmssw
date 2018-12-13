@@ -589,7 +589,6 @@ reco::BeamSpot BSFitter::Fit_d0phi() {
 	if (status){
 	  //edm::LogError("NoBeamSpotFit")<<"gaussian fit failed. no BS d0 fit";
 
-	  goodfit = false;
 	  return reco::BeamSpot();
 	}
 	double fpar[2] = {fgaus.GetParameter(1), fgaus.GetParameter(2) };

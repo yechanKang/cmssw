@@ -13,14 +13,14 @@
 class CastorPacker {
 public:
 
-  static void pack(int fedid, int dccnumber,
-                   int nl1a, int orbitn, int bcn,
-                   const CastorCollections& inputs, 
-                   const CastorElectronicsMap& emap,
-                   FEDRawData& output);
+  void pack(int fedid, int dccnumber,
+	    int nl1a, int orbitn, int bcn,
+	    const CastorCollections& inputs, 
+	    const CastorElectronicsMap& emap,
+	    FEDRawData& output);
 private:
-  static int findSamples(const DetId& did, const CastorCollections& inputs,
-                         unsigned short* buffer, int &presamples);
+  int findSamples(const DetId& did, const CastorCollections& inputs,
+		  unsigned short* buffer, int &presamples);
 };
 
 #endif

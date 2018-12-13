@@ -14,22 +14,34 @@
 //=============================================================================
 // Standard constructor, initializes variables
 //=============================================================================
-TTUBasicConfig::TTUBasicConfig( const TTUBoardSpecs * ttuspecs ):
-  TTUConfiguration(ttuspecs) ,
-  m_debug{false}
-{
+TTUBasicConfig::TTUBasicConfig( const TTUBoardSpecs * ttuspecs ) {
+
+  m_ttuboardspecs = ttuspecs;
+
+  m_ttulogic      = new TTULogicUnit();
+  
+  m_debug = false;
+  
 }
 
-TTUBasicConfig::TTUBasicConfig( const char * logic  ):
-  TTUConfiguration(logic),
-  m_debug{false}
-{
+TTUBasicConfig::TTUBasicConfig( const char * logic  ) {
+  
+  m_ttulogic = new TTULogicUnit( logic );
+
+  m_debug = false;
+    
 }
 
 //=============================================================================
 // Destructor
 //=============================================================================
 TTUBasicConfig::~TTUBasicConfig() {
+
+  if (m_ttulogic) delete m_ttulogic;
+
+  m_vecmask.clear();
+  m_vecforce.clear();
+
 } 
 
 //=============================================================================
@@ -57,16 +69,16 @@ bool TTUBasicConfig::initialise( int line , int ttuid )
   // initialise logic unit
   
   if ( line == 2 ) {
-    ttulogic()->setlogic( "WedgeORLogic" );
+    m_ttulogic->setlogic( "WedgeORLogic" );
   } else {
-    ttulogic()->setlogic( (*itr).m_LogicType.c_str() );
+    m_ttulogic->setlogic( (*itr).m_LogicType.c_str() );
   }
   
-  status = ttulogic()->initialise();
+  status = m_ttulogic->initialise();
   
   //itr = m_ttuboardspecs->m_boardspecs.begin();
   
-  ttulogic()->setBoardSpecs( m_ttuboardspecs->m_boardspecs[pos] );
+  m_ttulogic->setBoardSpecs( m_ttuboardspecs->m_boardspecs[pos] );
   
   // get mask and force vectors
   

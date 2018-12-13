@@ -20,10 +20,9 @@ public:
 
   RBCId(int , int * );
   
-  RBCId(const RBCId &) = default;
-  RBCId(RBCId &&) = default;
-  RBCId& operator=(RBCId const&) = default;
-  RBCId& operator=(RBCId&&) = default;
+  RBCId(const RBCId &);
+  
+  virtual ~RBCId( ); ///< Destructor
   
   int wheel() const { return m_wheel;};
   
@@ -37,7 +36,7 @@ public:
     m_sector[1] = _sec[1];
   };
   
-  void printinfo() const;
+  void printinfo();
     
 protected:
   

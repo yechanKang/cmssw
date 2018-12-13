@@ -12,7 +12,6 @@
 #include <fstream>
 #include <ios>
 #include <cmath>
-#include <memory>
 
 /** @class RBCProcessTestSignal RBCProcessTestSignal.h
  *  
@@ -25,7 +24,10 @@
  */
 class RBCProcessTestSignal : public ProcessInputSignal {
 public: 
-  explicit RBCProcessTestSignal( const char * ); 
+  /// Standard constructor
+  RBCProcessTestSignal( ) {}; 
+  
+  RBCProcessTestSignal( const char * ); 
   
   ~RBCProcessTestSignal( ) override; ///< Destructor
   
@@ -36,18 +38,18 @@ public:
   void showfirst();
   
   RPCInputSignal * retrievedata() override { 
-    return  m_lbin.get(); 
+    return  m_lbin; 
   };
   
 protected:
   
 private:
   
-  std::ifstream m_in;
+  std::ifstream * m_in;
   
-  RBCInput m_input;
+  RBCInput * m_input;
 
-  std::unique_ptr<RPCInputSignal> m_lbin;
+  RPCInputSignal * m_lbin;
   
   
 };

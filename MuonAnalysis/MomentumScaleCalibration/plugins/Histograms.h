@@ -1423,7 +1423,7 @@ class HLikelihoodVSPart : public Histograms
     Fill(CLHEP::HepLorentzVector(p4.x(),p4.y(),p4.z(),p4.t()), likeValue);
   }
   
-  void Fill(const CLHEP::HepLorentzVector& momentum, const double& likeValue) override { 
+   virtual void Fill(CLHEP::HepLorentzVector momentum, double likeValue) { 
      hLikeVSPt_->Fill(momentum.perp(),likeValue); 
      hLikeVSEta_->Fill(momentum.eta(),likeValue); 
      hLikeVSPhi_->Fill(momentum.phi(),likeValue); 
@@ -1903,7 +1903,6 @@ class HCovarianceVSxy : public Histograms
     }
   }
 
-  using Histograms::Get;
   double Get( const double & x, const double & y ) const {
     // Need to convert the (x,y) values to the array indeces
     int xIndex = getXindex(x);

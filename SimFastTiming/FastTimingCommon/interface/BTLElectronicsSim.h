@@ -34,14 +34,12 @@ class BTLElectronicsSim {
   void runTrivialShaper(BTLDataFrame &dataFrame, 
 			const mtd::MTDSimHitData& chargeColl,
 			const mtd::MTDSimHitData& toa1,
-			const mtd::MTDSimHitData& toa2,
-			const uint8_t row,
-			const uint8_t col) const;
+			const mtd::MTDSimHitData& toa2) const;
 
   void updateOutput(BTLDigiCollection &coll,
 		    const BTLDataFrame& rawDataFrame) const;
 
-  static constexpr int dfSIZE = 2;
+  static constexpr int dfSIZE = 5;
 
 
  private:
@@ -51,7 +49,6 @@ class BTLElectronicsSim {
   const bool debug_;
 
   const float bxTime_;
-  const float testBeamMIPTimeRes_;
   const float ScintillatorRiseTime_;
   const float ScintillatorDecayTime_;
   const float ChannelTimeOffset_;

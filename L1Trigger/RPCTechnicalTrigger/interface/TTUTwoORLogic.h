@@ -24,6 +24,8 @@ public:
   /// Standard constructor
   TTUTwoORLogic( ); 
 
+  ~TTUTwoORLogic( ) override; ///< Destructor
+
   //... from TTULogic interface:
   
   bool process( const TTUInput & ) override;
@@ -36,12 +38,11 @@ protected:
 
 private:
 
-
-  TTUTrackingAlg m_ttuLogic;
-  
-  TTUSectorORLogic m_rbcLogic;
-
   bool m_debug;
+
+  TTUTrackingAlg * m_ttuLogic;
+  
+  TTUSectorORLogic * m_rbcLogic;
   
 
 };

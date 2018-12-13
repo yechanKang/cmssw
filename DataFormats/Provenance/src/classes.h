@@ -35,7 +35,6 @@
 #include "DataFormats/Provenance/interface/ESRecordAuxiliary.h"
 #include "DataFormats/Provenance/interface/ViewTypeChecker.h"
 #include "FWCore/Utilities/interface/typedefs.h"
-#include "FWCore/Utilities/interface/VecArray.h"
 #include <map>
 #include <set>
 #include <vector>

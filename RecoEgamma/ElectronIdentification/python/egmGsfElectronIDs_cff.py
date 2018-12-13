@@ -16,6 +16,7 @@ from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 from RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi import *
 
 egmGsfElectronIDTask = cms.Task(
+    electronMVAVariableHelper,
     electronMVAValueMapProducer,
     egmGsfElectronIDs
 )
