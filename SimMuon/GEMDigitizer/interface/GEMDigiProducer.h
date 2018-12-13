@@ -15,7 +15,7 @@
 #include <string>
 
 class GEMGeometry;
-class GEMDigiModel;
+class GEMDigiModule;
 
 class GEMDigiProducer : public edm::stream::EDProducer<>
 {
@@ -39,7 +39,7 @@ private:
   edm::EDGetTokenT<CrossingFrame<PSimHit> > cf_token; 
   
   std::string digiModelString_;
-  GEMDigiModel* gemDigiModel_;
+  GEMDigiModule* gemDigiModule_;
 };
 
 #endif
