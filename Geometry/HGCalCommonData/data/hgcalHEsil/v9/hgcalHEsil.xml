@@ -9,7 +9,7 @@
       hgcalwafer:HGCalHEWafer0Coarse2, hgcalwafer:HGCalHEWafer1Fine,
       hgcalwafer:HGCalHEWafer1Coarse1, hgcalwafer:HGCalHEWafer1Coarse2</Vector>
     <Vector name="MaterialNames" type="string" nEntries="9">
-      materials:HGCalStainlessSteel, materials:HGCalStainlessSteel, materials:Air,
+      materials:SpecialFakeStainlessSteel, materials:SpecialFakeStainlessSteel, materials:Air,
       materials:Copper,  hgcalMaterial:HGC_G10-FR4, materials:Air, 
       materials:Silicon, hgcalMaterial:HGC_G10-FR4, materials:Copper</Vector>
     <Vector name="VolumeNames" type="string" nEntries="9">
