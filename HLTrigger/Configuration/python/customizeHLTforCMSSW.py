@@ -47,18 +47,21 @@ def customiseFor2017DtUnpacking(process):
 
     return process
 
-def customiseFor25811(process):
-    for prod in producers_by_type(process, "SiPixelClusterProducer"):
-        if hasattr(prod, "MissCalibrate") and not prod.MissCalibrate.isTracked():
-            prod.MissCalibrate = cms.bool(prod.MissCalibrate.value())
+
+# type of parameter changed
+def customiseFor24501(process):
+    for producer in producers_by_type(process, "PFRecoTauDiscriminationByIsolation"):
+        if hasattr(producer, "deltaBetaPUTrackPtCutOverride") and not isinstance(producer.deltaBetaPUTrackPtCutOverride, cms.bool):
+            producer.deltaBetaPUTrackPtCutOverride_val = producer.deltaBetaPUTrackPtCutOverride
+            producer.deltaBetaPUTrackPtCutOverride = cms.bool(True)
     return process
+
 
 # CMSSW version specific customizations
 def customizeHLTforCMSSW(process, menuType="GRun"):
 
     # add call to action function in proper order: newest last!
     # process = customiseFor12718(process)
-
-    process = customiseFor25811(process)
+    process = customiseFor24501(process)
 
     return process
