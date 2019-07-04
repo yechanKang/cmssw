@@ -4,7 +4,8 @@
 #include <bitset>
 #include <vector>
 
-const int maskSIZE = 768;
+// strip numbering start from 1 in simulation. if strip numbering has fixed, it should be fixed.
+const int maskSIZE = 769; 
 typedef std::bitset<maskSIZE> EtaPartitionMask;
 
 #endif
