@@ -143,7 +143,7 @@ std::vector<std::pair<int, int> > GEMSignalModel::simulateClustering(const GEMEt
   int cluster_end = roll->strip(smeared_end_point);
 
   std::vector<std::pair<int, int> > cluster;
-  for (int strip = cluster_start; strip <= cluster_end; strip++) {
+  for (int strip = cluster_start; strip <= cluster_end and strip < roll->nstrips(); strip++) {
     cluster.emplace_back(strip, bx);
   }
 
