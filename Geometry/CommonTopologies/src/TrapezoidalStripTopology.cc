@@ -73,8 +73,8 @@ float TrapezoidalStripTopology::strip(const LocalPoint& lp) const {
   float aStrip = ((lp.x() * theDistToBeam / (theYAxOr * lp.y() + theDistToBeam)) - theOffset) / thePitch;
   if (aStrip < 0)
     aStrip = 0;
-  else if (aStrip > theNumberOfStrips)
-    aStrip = theNumberOfStrips;
+  else if (aStrip > (theNumberOfStrips-1))
+    aStrip = theNumberOfStrips-1;
   return aStrip;
 }
 
