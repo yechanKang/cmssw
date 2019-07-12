@@ -15,7 +15,7 @@ GEMEtaPartitionSpecs::GEMEtaPartitionSpecs(SubDetector rss, const std::string& n
     float strips = _p[3];
     float pitch = (b + B) / strips;
     int nstrip = static_cast<int>(strips);
-    _top = new TrapezoidalStripTopology(nstrip, pitch, striplength, r0);
+    _top = new TrapezoidalStripTopology(nstrip-1, pitch, striplength, r0);
 
     float pads = _p[4];
     float pad_pitch = (b + B) / pads;
