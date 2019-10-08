@@ -19,6 +19,7 @@
 #include "EventFilter/GEMRawToDigi/interface/GEMGEBdataCollection.h"
 #include "EventFilter/GEMRawToDigi/interface/GEMAMCdataCollection.h"
 #include "EventFilter/GEMRawToDigi/interface/GEMAMC13EventCollection.h"
+#include "EventFilter/GEMRawToDigi/interface/GEMRawToDigi.h"
 
 #include "CondFormats/DataRecord/interface/GEMeMapRcd.h"
 #include "CondFormats/GEMObjects/interface/GEMeMap.h"
@@ -47,6 +48,7 @@ private:
   edm::EDGetTokenT<FEDRawDataCollection> fed_token;
   bool useDBEMap_;
   bool unPackStatusDigis_;
+  std::unique_ptr<GEMRawToDigi> gemRawToDigi_;
 };
 DEFINE_FWK_MODULE(GEMRawToDigiModule);
 #endif
