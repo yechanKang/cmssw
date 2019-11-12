@@ -42,7 +42,7 @@ public:
   virtual edm::OwnVector<GEMRecHit> reconstruct(const GEMEtaPartition& roll,
                                                 const GEMDetId& gemId,
                                                 const GEMDigiCollection::Range& digiRange,
-                                                const EtaPartitionMask& mask);
+                                                const EtaPartitionMaskPair& mask);
 
   /// standard local recHit computation
   virtual bool compute(const GEMEtaPartition& roll,

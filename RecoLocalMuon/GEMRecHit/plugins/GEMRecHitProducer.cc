@@ -103,23 +103,25 @@ void GEMRecHitProducer::beginRun(const edm::Run& r, const edm::EventSetup& setup
     for (auto gems : gemGeom_->etaPartitions()) {
       // Getting the EtaPartitionMask mask, that includes dead strips, for the given GEMDet
       GEMDetId gemId = gems->id();
+      EtaPartitionMask dead;
       EtaPartitionMask mask;
       const int rawId = gemId.rawId();
       for (const auto& tomask : theGEMMaskedStripsObj->getMaskVec()) {
         if (tomask.rawId == rawId) {
           const int bit = tomask.strip;
-          mask.set(bit - 1);
+          mask.set(bit);
         }
       }
       for (const auto& tomask : theGEMDeadStripsObj->getDeadVec()) {
         if (tomask.rawId == rawId) {
           const int bit = tomask.strip;
-          mask.set(bit - 1);
+          mask.set(bit);
+          dead.set(bit);
         }
       }
       // add to masking map if masking present in etaPartition
-      if (mask.any()) {
-        gemMask_.emplace(gemId, mask);
+      if (mask.any() or dead.any()) {
+        gemMask_.emplace(gemId, make_pair(mask, dead));
       }
     }
   }
@@ -152,7 +154,7 @@ void GEMRecHitProducer::produce(Event& event, const EventSetup& setup) {
     const GEMDigiCollection::Range& range = (*gemdgIt).second;
 
     // get mask from map
-    EtaPartitionMask mask;
+    EtaPartitionMaskPair mask;
     if (applyMasking_) {
       auto gemmaskIt = gemMask_.find(gemId);
       if (gemmaskIt != gemMask_.end())

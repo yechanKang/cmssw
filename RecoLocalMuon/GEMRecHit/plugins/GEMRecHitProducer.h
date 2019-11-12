@@ -54,7 +54,7 @@ private:
   edm::ESHandle<GEMGeometry> gemGeom_;
 
   // map of mask and dead strips
-  std::map<GEMDetId, EtaPartitionMask> gemMask_;
+  std::map<GEMDetId, EtaPartitionMaskPair> gemMask_;
 
   bool applyMasking_;
 };

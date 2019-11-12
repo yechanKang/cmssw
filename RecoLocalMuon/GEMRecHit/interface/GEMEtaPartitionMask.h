@@ -6,5 +6,6 @@
 
 const int maskSIZE = 768;
 typedef std::bitset<maskSIZE> EtaPartitionMask;
+typedef std::pair<EtaPartitionMask, EtaPartitionMask> EtaPartitionMaskPair;
 
 #endif

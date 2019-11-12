@@ -19,13 +19,13 @@ GEMRecHitBaseAlgo::~GEMRecHitBaseAlgo() {}
 edm::OwnVector<GEMRecHit> GEMRecHitBaseAlgo::reconstruct(const GEMEtaPartition& roll,
                                                          const GEMDetId& gemId,
                                                          const GEMDigiCollection::Range& digiRange,
-                                                         const EtaPartitionMask& mask) {
+                                                         const EtaPartitionMaskPair& mask) {
   edm::OwnVector<GEMRecHit> result;
 
   GEMClusterizer clizer;
-  GEMClusterContainer tcls = clizer.doAction(digiRange);
+  GEMClusterContainer tcls = clizer.doAction(digiRange, mask.first);
   GEMMaskReClusterizer mrclizer;
-  GEMClusterContainer cls = mrclizer.doAction(gemId, tcls, mask);
+  GEMClusterContainer cls = mrclizer.doAction(gemId, tcls, mask.second);
 
   for (GEMClusterContainer::const_iterator cl = cls.begin(); cl != cls.end(); cl++) {
     LocalError tmpErr;
