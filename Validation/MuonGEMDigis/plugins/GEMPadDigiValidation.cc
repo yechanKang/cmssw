@@ -5,6 +5,10 @@ GEMPadDigiValidation::GEMPadDigiValidation(const edm::ParameterSet& pset)
   const auto& pad_pset = pset.getParameterSet("gemPadDigi");
   const auto& pad_tag = pad_pset.getParameter<edm::InputTag>("inputTag");
   pad_token_ = consumes<GEMPadDigiCollection>(pad_tag);
+
+  const auto& strip_pset = pset.getParameterSet("gemStripDigi");
+  const auto& strip_tag = strip_pset.getParameter<edm::InputTag>("inputTag");
+  strip_token_ = consumes<GEMDigiCollection>(strip_tag);
 }
 
 void GEMPadDigiValidation::bookHistograms(DQMStore::IBooker& booker,
@@ -25,6 +29,7 @@ void GEMPadDigiValidation::bookHistograms(DQMStore::IBooker& booker,
       ME2IdsKey key2(region_id, station_id);
 
       me_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "pad", "Pad");
+      me_strip_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "pad_strip", "Pad");
 
       const GEMSuperChamber* super_chamber = station->superChambers().front();
       for (const auto& chamber : super_chamber->chambers()) {
@@ -82,15 +87,15 @@ GEMPadDigiValidation::~GEMPadDigiValidation() {}
 void GEMPadDigiValidation::analyze(const edm::Event& event, const edm::EventSetup& setup) {
   const GEMGeometry* gem = initGeometry(setup);
 
-  edm::Handle<GEMPadDigiCollection> collection;
-  event.getByToken(pad_token_, collection);
-  if (not collection.isValid()) {
+  edm::Handle<GEMPadDigiCollection> padcollection;
+  event.getByToken(pad_token_, padcollection);
+  if (not padcollection.isValid()) {
     edm::LogError(kLogCategory_) << "Cannot get pads by label GEMPadToken.";
     return;
   }
 
   // type of range_iter: GEMPadDigiCollection::DigiRangeIterator
-  for (auto range_iter = collection->begin(); range_iter != collection->end(); range_iter++) {
+  for (auto range_iter = padcollection->begin(); range_iter != padcollection->end(); range_iter++) {
     GEMDetId gemid = (*range_iter).first;
     const auto& range = (*range_iter).second;
 
@@ -137,5 +142,52 @@ void GEMPadDigiValidation::analyze(const edm::Event& event, const edm::EventSetu
         me_detail_bx_[key3]->Fill(bx);
       }  // if detail_plot
     }    // digi loop
+  }      // range loop
+
+  edm::Handle<GEMDigiCollection> stripcollection;
+  event.getByToken(strip_token_, stripcollection);
+  if (not stripcollection.isValid()) {
+    edm::LogError(kLogCategory_) << "Cannot get pads by label GEMPadToken.";
+    return;
+  }
+  Int_t minBx = -5;
+  Int_t maxBx = 3;
+  Int_t nBx = maxBx - minBx + 1;
+
+  // type of range_iter: GEMDigiCollection::DigiRangeIterator
+  for (auto range_iter = stripcollection->begin(); range_iter != stripcollection->end(); range_iter++) {
+    GEMDetId gemid = (*range_iter).first;
+    const auto& range = (*range_iter).second;
+
+    if (gem->idToDet(gemid) == nullptr) {
+      edm::LogError(kLogCategory_) << "Getting DetId failed. Discard this gem pad hit. "
+                                   << "Maybe it comes from unmatched geometry." << std::endl;
+      continue;
+    }
+
+    const GEMEtaPartition* roll = gem->etaPartition(gemid);
+
+    Int_t region_id = gemid.region();
+    Int_t station_id = gemid.station();
+    Int_t layer_id = gemid.layer();
+    Int_t chamber_id = gemid.chamber();
+    Int_t roll_id = gemid.roll();
+    Int_t npads = roll->npads();
+
+    ME2IdsKey key2(region_id, station_id);
+    ME3IdsKey key3(region_id, station_id, layer_id);
+    std::bitset<384> pad_strip[nBx];
+
+    for (auto digi = range.first; digi != range.second; ++digi) {
+      Int_t strip = digi->strip();
+      Int_t bx = digi->bx();
+      pad_strip[bx-minBx].set(strip/2);
+    }    // digi loop
+    for (Int_t pad = 0; pad < npads; pad++) {
+      Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
+      for (Int_t bx = minBx; bx < maxBx; bx++) {
+        if (pad_strip[bx-minBx].test(pad)) me_strip_occ_det_[key2]->Fill(bin_x, roll_id);
+      }
+    }
   }      // range loop
 }

@@ -1,5 +1,8 @@
 #include "Geometry/CommonTopologies/interface/StripTopology.h"
 #include "Validation/MuonGEMDigis/plugins/GEMStripDigiValidation.h"
+#include <iostream>
+using std::cout;
+using std::endl;
 
 GEMStripDigiValidation::GEMStripDigiValidation(const edm::ParameterSet& pset)
     : GEMBaseValidation(pset, "GEMStripDigiValidation") {
@@ -69,6 +72,7 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
 
     for (const auto& station : region->stations()) {
       Int_t station_id = station->station();
+      //if (station_id != 1) continue;
       ME2IdsKey key2{region_id, station_id};
 
       me_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "strip", "Strip Digi");
@@ -127,10 +131,6 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
 
   edm::Handle<edm::PSimHitContainer> simhit_container;
   event.getByToken(simhit_token_, simhit_container);
-  if (not simhit_container.isValid()) {
-    edm::LogError(kLogCategory_) << "Failed to get PSimHitContainer." << std::endl;
-    return;
-  }
 
   edm::Handle<GEMDigiCollection> digi_collection;
   event.getByToken(strip_token_, digi_collection);
@@ -187,6 +187,10 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     }
   }  // range loop
 
+  if (not simhit_container.isValid()) {
+    edm::LogError(kLogCategory_) << "Failed to get PSimHitContainer." << std::endl;
+    return;
+  }
   // NOTE
   for (const auto& simhit : *simhit_container.product()) {
     if (not isMuonSimHit(simhit))

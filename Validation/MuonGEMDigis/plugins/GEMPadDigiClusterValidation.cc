@@ -25,6 +25,7 @@ void GEMPadDigiClusterValidation::bookHistograms(DQMStore::IBooker& booker,
       ME2IdsKey key2{region_id, station_id};
 
       me_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "pad", "Pad Cluster");
+      me_pad_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "pad_resolved", "Pad Cluster");
 
       const GEMSuperChamber* super_chamber = station->superChambers().front();
       for (const auto& chamber : super_chamber->chambers()) {
@@ -129,6 +130,10 @@ void GEMPadDigiClusterValidation::analyze(const edm::Event& event, const edm::Ev
 
       Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
       me_occ_det_[key2]->Fill(bin_x, roll_id);
+      for (auto digi_ : digi->pads()) {
+        Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
+        me_pad_occ_det_[key2]->Fill(bin_x, roll_id);
+      }
 
       if (detail_plot_) {
         me_detail_occ_xy_[key3]->Fill(g_x, g_y);

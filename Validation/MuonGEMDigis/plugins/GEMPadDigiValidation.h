@@ -3,6 +3,7 @@
 
 #include "Validation/MuonGEMHits/interface/GEMBaseValidation.h"
 #include "DataFormats/GEMDigi/interface/GEMPadDigiCollection.h"
+#include "DataFormats/GEMDigi/interface/GEMDigiCollection.h"
 
 class GEMPadDigiValidation : public GEMBaseValidation {
 public:
@@ -14,6 +15,7 @@ public:
 private:
   // NOTE Parameters
   edm::EDGetTokenT<GEMPadDigiCollection> pad_token_;
+  edm::EDGetTokenT<GEMDigiCollection> strip_token_;
 
   // NOTE MonitorElemnts
   MEMap2Ids me_occ_det_;
@@ -22,6 +24,10 @@ private:
   MEMap3Ids me_detail_occ_phi_pad_;
   MEMap3Ids me_detail_occ_pad_;
   MEMap3Ids me_detail_bx_;
+
+  // occupancy plots for efficiency (strip digi - pad digi matching)
+  // strip digi occupancy with pad digi resolution
+  MEMap2Ids me_strip_occ_det_;
 };
 
 #endif  // Validation_MuonGEMDigis_GEMPadDigiValidation_h

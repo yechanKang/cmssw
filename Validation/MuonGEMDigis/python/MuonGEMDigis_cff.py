@@ -15,6 +15,7 @@ gemPadValidation = DQMEDAnalyzer('GEMPadDigiValidation',
   GEMValidationCommonParameters,
   detailPlot = cms.bool(True),
   gemPadDigi = muonGEMDigiPSet.gemPadDigi,
+  gemStripDigi = muonGEMDigiPSet.gemUnpackedStripDigi,
 )
 
 gemClusterValidation = DQMEDAnalyzer('GEMPadDigiClusterValidation',

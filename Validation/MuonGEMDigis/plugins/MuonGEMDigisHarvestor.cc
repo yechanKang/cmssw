@@ -55,4 +55,35 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
 
     }  // statino loop
   }    // region loop
+
+  TString pad_occ_folder = "MuonGEMDigisV/GEMDigisTask/Pad/Occupancy/";
+  TString pad_eff_folder = "MuonGEMDigisV/GEMDigisTask/Pad/Efficiency/";
+  TString cluster_occ_folder = "MuonGEMDigisV/GEMDigisTask/PadCluster/Occupancy/";
+  TString cluster_eff_folder = "MuonGEMDigisV/GEMDigisTask/PadCluster/Efficiency/";
+
+  for (Int_t region_id : region_ids_) {
+    TString name_suffix_re = GEMUtils::getSuffixName(region_id);
+    TString title_suffix_re = GEMUtils::getSuffixTitle(region_id);
+
+    for (Int_t station_id : station_ids_) {
+      TString name_suffix_re_st = GEMUtils::getSuffixName(region_id, station_id);
+      TString title_suffix_re_st = GEMUtils::getSuffixTitle(region_id, station_id);
+
+      // NOTE Detector Component efficiency
+      TString pad_det_name = "pad_occ_det" + name_suffix_re_st;
+      TString strip_det_name = "pad_strip_occ_det" + name_suffix_re_st;
+      TString pad_det_path = pad_occ_folder + pad_det_name;
+      TString strip_det_path = pad_occ_folder + strip_det_name;
+      TString eff_det_name = "eff_det" + name_suffix_re_st;
+      TString eff_det_title = "Detector Component Efficiency :" + title_suffix_re_st;
+
+      bookEff2D(booker, getter, pad_det_path, strip_det_path, pad_eff_folder, eff_det_name, eff_det_title);
+
+      TString resolved_det_name = "pad_resolved_occ_det" + name_suffix_re_st;
+      TString resolved_det_path = cluster_occ_folder + resolved_det_name;
+      TString eff_resolved_det_name = "eff_det" + name_suffix_re_st;
+
+      bookEff2D(booker, getter, resolved_det_path, pad_det_path, cluster_eff_folder, eff_resolved_det_name, eff_det_title);
+    }  // statino loop
+  }    // region loop
 }
