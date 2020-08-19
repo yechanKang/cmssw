@@ -49,7 +49,6 @@ private:
 
 GEMPadDigiProducer::GEMPadDigiProducer(const edm::ParameterSet& ps) : geometry_(nullptr) {
   digis_ = ps.getParameter<edm::InputTag>("InputCollection");
-  use16GE21_ = ps.getParameter<bool>("use16GE21");
 
   digi_token_ = consumes<GEMDigiCollection>(digis_);
   geom_token_ = esConsumes<GEMGeometry, MuonGeometryRecord, edm::Transition::BeginRun>();
@@ -63,8 +62,6 @@ GEMPadDigiProducer::~GEMPadDigiProducer() {}
 void GEMPadDigiProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.add<edm::InputTag>("InputCollection", edm::InputTag("simMuonGEMDigis"));
-  // GE2/1 geometry with 16 eta partitions
-  desc.add<bool>("use16GE21", false);
 
   descriptions.add("simMuonGEMPadDigisDef", desc);
 }
@@ -72,6 +69,8 @@ void GEMPadDigiProducer::fillDescriptions(edm::ConfigurationDescriptions& descri
 void GEMPadDigiProducer::beginRun(const edm::Run& run, const edm::EventSetup& eventSetup) {
   edm::ESHandle<GEMGeometry> hGeom = eventSetup.getHandle(geom_token_);
   geometry_ = &*hGeom;
+  // GE2/1 geometry with 16 eta partitions
+  use16GE21_ = (geometry_->ring(1, 2, 1)->superChamber(1)->chamber(1)->nEtaPartitions() == 16);
 }
 
 void GEMPadDigiProducer::produce(edm::Event& e, const edm::EventSetup& eventSetup) {
@@ -139,18 +138,12 @@ void GEMPadDigiProducer::buildPads16GE21(const GEMDigiCollection& det_digis, GEM
         p->id().region(), p->id().ring(), p->id().station(), p->id().layer(), p->id().chamber(), p->id().roll() + 1);
     auto digis2 = det_digis.get(gemId2);
 
-    for (auto d = digis.first; d != digis.second; ++d) {
-      // check if the strip digi in the eta partition below also has a digi
-      for (auto d2 = digis2.first; d2 != digis2.second; ++d2) {
-        if (d->strip() == d2->strip()) {
-          proto_pads.emplace(d->strip(), d->bx());
-        }
-      }
-    }
+    for (auto d = digis.first;  d != digis.second;  ++d) proto_pads.emplace(d->strip(), d->bx());
+    for (auto d = digis2.first; d != digis2.second; ++d) proto_pads.emplace(d->strip(), d->bx());
 
     // fill the output collections
     for (const auto& d : proto_pads) {
-      GEMPadDigi pad_digi(d.first, d.second);
+      GEMPadDigi pad_digi(d.first, d.second, GEMSubDetId::station(p->id().station()));
       out_pads.insertDigi(p->id(), pad_digi);
     }
   }
