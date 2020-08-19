@@ -138,8 +138,10 @@ void GEMPadDigiProducer::buildPads16GE21(const GEMDigiCollection& det_digis, GEM
         p->id().region(), p->id().ring(), p->id().station(), p->id().layer(), p->id().chamber(), p->id().roll() + 1);
     auto digis2 = det_digis.get(gemId2);
 
-    for (auto d = digis.first;  d != digis.second;  ++d) proto_pads.emplace(d->strip(), d->bx());
-    for (auto d = digis2.first; d != digis2.second; ++d) proto_pads.emplace(d->strip(), d->bx());
+    for (auto d = digis.first; d != digis.second; ++d)
+      proto_pads.emplace(d->strip(), d->bx());
+    for (auto d = digis2.first; d != digis2.second; ++d)
+      proto_pads.emplace(d->strip(), d->bx());
 
     // fill the output collections
     for (const auto& d : proto_pads) {
