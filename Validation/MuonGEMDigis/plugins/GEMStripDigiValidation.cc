@@ -97,6 +97,8 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
 
       me_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "strip", "Strip Digi");
 
+      me_occ_pad_det_[key2] = bookDetectorOccupancy(booker, key2, station, "pad", "Pad from Strip Digi");
+
       me_simhit_occ_phi_[key2] =
           bookHist1D(booker, key2, "muon_simhit_occ_phi", "Muon SimHit Phi Occupancy", 51, -M_PI, M_PI, "#phi");
 
@@ -206,9 +208,15 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     const GEMEtaPartition* roll = gem->etaPartition(id);
 
     const GEMDigiCollection::Range& range = (*range_iter).second;
+    
+    std::set<std::tuple<int, int> > proto_pads;
+
     for (auto digi = range.first; digi != range.second; ++digi) {
       Int_t strip = digi->strip();
       Int_t bx = digi->bx();
+
+      unsigned pad_num = static_cast<unsigned>(roll->padOfStrip(strip));
+      proto_pads.emplace(pad_num, bx);
 
       GlobalPoint strip_global_pos = surface.toGlobal(roll->centreOfStrip(digi->strip()));
 
@@ -228,6 +236,10 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
         me_detail_occ_strip_[key3]->Fill(strip);
         me_detail_occ_phi_strip_[key3]->Fill(digi_g_phi, strip);
       }
+    }
+
+    for (const auto& d : proto_pads) {
+      me_occ_pad_det_[key2]->Fill(bin_x, roll_id);
     }
   }  // range loop
 

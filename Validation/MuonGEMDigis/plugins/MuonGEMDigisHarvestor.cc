@@ -14,6 +14,10 @@ MuonGEMDigisHarvestor::~MuonGEMDigisHarvestor() {}
 void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGetter& getter) {
   TString occ_folder = "MuonGEMDigisV/GEMDigisTask/Strip/Occupancy/";
   TString eff_folder = "MuonGEMDigisV/GEMDigisTask/Strip/Efficiency/";
+  TString pad_occ_folder = "MuonGEMDigisV/GEMDigisTask/Pad/Occupancy/";
+  TString pad_eff_folder = "MuonGEMDigisV/GEMDigisTask/Pad/Efficiency/";
+  TString cluster_occ_folder = "MuonGEMDigisV/GEMDigisTask/PadCluster/Occupancy/";
+  TString cluster_eff_folder = "MuonGEMDigisV/GEMDigisTask/PadCluster/Efficiency/";
 
   for (Int_t region_id : region_ids_) {
     TString name_suffix_re = GEMUtils::getSuffixName(region_id);
@@ -53,6 +57,29 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
 
       bookEff2D(booker, getter, strip_det_path, simhit_det_path, eff_folder, eff_det_name, eff_det_title);
 
+      TString pad_det_name = "pad_occ_det" + name_suffix_re_st;
+      TString pad_det_path = pad_occ_folder + pad_det_name;
+      TString pad_from_strip_det_path = occ_folder + pad_det_name;
+      TString pad_eff_det_name = "eff_det" + name_suffix_re_st;
+      TString pad_eff_det_title = "Detector Component Efficiency (Strip Digi Only) :" + title_suffix_re_st;
+
+      bookEff2D(booker, getter, pad_from_strip_det_path, pad_det_path, pad_eff_folder, pad_eff_det_name, pad_eff_det_title);
+
+      TString pad_from_cluster_det_path = cluster_occ_folder + pad_det_name;
+      TString cluster_eff_det_name = "eff_det" + name_suffix_re_st;
+      TString cluster_eff_det_title = "Detector Component Efficiency (Pad Digi Only) :" + title_suffix_re_st;
+
+      bookEff2D(booker, getter, pad_from_cluster_det_path, pad_det_path, cluster_eff_folder, cluster_eff_det_name, cluster_eff_det_title);
+
+      // NOTE Detector Component efficiency
+      TString ma_pad_det_name = "matched_occ_det" + name_suffix_re_st;
+      TString simhit_pad_det_name = "simhit_occ_det" + name_suffix_re_st;
+      TString ma_pad_det_path = cluster_occ_folder + ma_pad_det_name;
+      TString simhit_pad_det_path = cluster_occ_folder + simhit_pad_det_name;
+      TString pad_sim_eff_det_name = "eff_det_sim" + name_suffix_re_st;
+      TString pad_sim_eff_det_title = "Detector Component Efficiency (Muon Only) :" + title_suffix_re_st;
+
+      bookEff2D(booker, getter, ma_pad_det_path, simhit_pad_det_path, cluster_eff_folder, pad_sim_eff_det_name, pad_sim_eff_det_title);
     }  // statino loop
   }    // region loop
 }

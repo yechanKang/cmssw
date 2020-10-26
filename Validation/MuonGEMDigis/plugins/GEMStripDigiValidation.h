@@ -23,6 +23,7 @@ private:
   // Occupaancy
   MEMap1Ids me_occ_zr_;
   MEMap2Ids me_occ_det_;
+  MEMap2Ids me_occ_pad_det_;
   MEMap3Ids me_detail_occ_xy_;
   MEMap3Ids me_detail_occ_strip_;
   MEMap3Ids me_detail_occ_phi_strip_;
