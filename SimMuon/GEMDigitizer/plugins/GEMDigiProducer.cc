@@ -27,14 +27,22 @@
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "Geometry/GEMGeometry/interface/GEMGeometry.h"
 
+#include <iostream>
+using std::cout;
+using std::endl;
+#include <random>
+
 #include <sstream>
 #include <string>
 #include <map>
 #include <vector>
+#include <tuple>
 
 namespace CLHEP {
   class HepRandomEngine;
 }
+
+typedef std::tuple<int, int, int, int> Key4D;
 
 class GEMDigiProducer : public edm::stream::EDProducer<> {
 public:
@@ -153,6 +161,44 @@ void GEMDigiProducer::produce(edm::Event& e, const edm::EventSetup& eventSetup) 
   e.getByToken(cf_token, cf);
 
   MixCollection<PSimHit> hits{cf.product()};
+  
+  // Scripts for the double polarization
+  
+  std::map<Key4D, bool> moduleMask;
+  std::random_device rd; // obtain a random number from hardware
+  std::mt19937 eng(rd()); // seed the generator
+  std::uniform_real_distribution<> randomFloat(0, 1);
+
+  float VALUE[8] = { 0.007033016375,
+                     0.01523827125,
+                     0.0175825075,
+                     0.01523827125,
+                     0.0210990625,
+                     0.0246156175,
+                     0.05040194875,
+                     0.05509202625
+                     };
+
+  // Crosstalk with deadtime multiflied by some number
+  //float multiplier = 1.; // 50BX
+  //float multiplier = 0.5; // 25BX
+  float multiplier = 0.4; // 20BX
+  //float multiplier = 0.1; // 50BX with 10 times reduced rate
+  //float multiplier = 0.05; // 25BX with 10 times reduced rate
+
+  float percentage = 0.01;
+  
+  for (const auto& roll : geometry_->etaPartitions()) {
+    // The values from gemDPG_phase2_20200303.pdf X ===> Updated : see last slide in https://docs.google.com/presentation/d/1AfmQ1uDBZWHX0DdL1rtaHb3ILIKKVu_KFY_vjYsGj00/edit#slide=id.g8a6032e479_0_1
+    const GEMDetId detId(roll->id());
+    if (detId.station() != 2) continue;
+    auto randomNumber = randomFloat(eng);
+    int idx = (detId.roll()-1) / 2;
+    Key4D key(detId.region(), detId.station(), detId.chamber(), (detId.roll()-1)/4);
+    if ( randomNumber < percentage * VALUE[idx] * multiplier ) moduleMask[key] = true;
+  }
+
+  //////////////////// double pol end
 
   // Create empty output
   auto digis = std::make_unique<GEMDigiCollection>();
@@ -172,13 +218,18 @@ void GEMDigiProducer::produce(edm::Event& e, const edm::EventSetup& eventSetup) 
     const GEMDetId detId(roll->id());
     const uint32_t rawId(detId.rawId());
     const auto& simHits(hitMap[rawId]);
+    Key4D key(detId.region(), detId.station(), detId.chamber(), (detId.roll()-1)/4);
 
     LogDebug("GEMDigiProducer") << "GEMDigiProducer: found " << simHits.size() << " hit(s) in eta partition" << rawId;
 
-    gemDigiModule_->simulate(roll, simHits, engine);
-    gemDigiModule_->fillDigis(rawId, *digis);
-    (*stripDigiSimLinks).insert(gemDigiModule_->stripDigiSimLinks());
-    (*gemDigiSimLinks).insert(gemDigiModule_->gemDigiSimLinks());
+    //if (etaMask[detId] == true) cout << "Skip digis on a dead board : " << detId << endl;
+    //else {
+    if (moduleMask[key] != true) {
+      gemDigiModule_->simulate(roll, simHits, engine);
+      gemDigiModule_->fillDigis(rawId, *digis);
+      (*stripDigiSimLinks).insert(gemDigiModule_->stripDigiSimLinks());
+      (*gemDigiSimLinks).insert(gemDigiModule_->gemDigiSimLinks());
+    }
   }
 
   // store them in the event
