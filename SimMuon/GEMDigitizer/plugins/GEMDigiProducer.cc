@@ -27,6 +27,11 @@
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "Geometry/GEMGeometry/interface/GEMGeometry.h"
 
+#include <iostream>
+using std::cout;
+using std::endl;
+#include <random>
+
 #include <sstream>
 #include <string>
 #include <map>
@@ -153,6 +158,42 @@ void GEMDigiProducer::produce(edm::Event& e, const edm::EventSetup& eventSetup) 
   e.getByToken(cf_token, cf);
 
   MixCollection<PSimHit> hits{cf.product()};
+  
+  // Scripts for the double polarization
+  
+  std::map<GEMDetId, bool> etaMask;
+  std::random_device rd; // obtain a random number from hardware
+  std::mt19937 eng(rd()); // seed the generator
+  std::uniform_real_distribution<> randomFloat(0, 1);
+
+  float VALUE[8] = { 0.212997435,
+                     0.27290354,
+                     0.29952727,
+                     0.379401715,
+                     0.4792445,
+                     0.59239915,
+                     0.965145475,
+                     1.25136305
+                     };
+
+  // Crosstalk with deadtime multiflied by some number
+  float multiplier = 1.; // 50BX
+  //float multiplier = 0.5; // 25BX
+  //float multiplier = 0.1; // 50BX with 10 times reduced rate
+  //float multiplier = 0.05; // 25BX with 10 times reduced rate
+
+  float percentage = 0.01;
+  
+  for (const auto& roll : geometry_->etaPartitions()) {
+    // The values from gemDPG_phase2_20200303.pdf X ===> Updated : see last slide in https://docs.google.com/presentation/d/1AfmQ1uDBZWHX0DdL1rtaHb3ILIKKVu_KFY_vjYsGj00/edit#slide=id.g8a6032e479_0_1
+    const GEMDetId detId(roll->id());
+    if (detId.station() != 2) continue;
+    auto randomNumber = randomFloat(eng);
+    int idx = (detId.roll()-1) / 2;
+    if ( randomNumber < percentage * VALUE[idx] * multiplier ) etaMask[detId] = true;
+  }
+
+  //////////////////// double pol end
 
   // Create empty output
   auto digis = std::make_unique<GEMDigiCollection>();
@@ -175,10 +216,14 @@ void GEMDigiProducer::produce(edm::Event& e, const edm::EventSetup& eventSetup) 
 
     LogDebug("GEMDigiProducer") << "GEMDigiProducer: found " << simHits.size() << " hit(s) in eta partition" << rawId;
 
-    gemDigiModule_->simulate(roll, simHits, engine);
-    gemDigiModule_->fillDigis(rawId, *digis);
-    (*stripDigiSimLinks).insert(gemDigiModule_->stripDigiSimLinks());
-    (*gemDigiSimLinks).insert(gemDigiModule_->gemDigiSimLinks());
+    //if (etaMask[detId] == true) cout << "Skip digis on a dead board : " << detId << endl;
+    //else {
+    if (etaMask[detId] != true) {
+      gemDigiModule_->simulate(roll, simHits, engine);
+      gemDigiModule_->fillDigis(rawId, *digis);
+      (*stripDigiSimLinks).insert(gemDigiModule_->stripDigiSimLinks());
+      (*gemDigiSimLinks).insert(gemDigiModule_->gemDigiSimLinks());
+    }
   }
 
   // store them in the event
