@@ -142,6 +142,7 @@ void GEMRecHitProducer::produce(Event& event, const EventSetup& setup) {
   for (auto gemdgIt = digis->begin(); gemdgIt != digis->end(); ++gemdgIt) {
     // The layerId
     const GEMDetId& gemId = (*gemdgIt).first;
+    if (gemId.station() != 2) continue;
 
     // Get the GeomDet from the setup
     const GEMEtaPartition* roll = gemGeom_->etaPartition(gemId);
