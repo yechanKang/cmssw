@@ -256,6 +256,8 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
     Int_t chamber_id = simhit_gemid.chamber();
     Int_t roll_id = simhit_gemid.roll();
 
+    if (station_id != 2) continue;
+
     ME2IdsKey key2{region_id, station_id};
     ME3IdsKey key3{region_id, station_id, layer_id};
 
