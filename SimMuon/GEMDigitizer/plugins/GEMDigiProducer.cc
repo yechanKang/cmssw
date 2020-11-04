@@ -169,20 +169,14 @@ void GEMDigiProducer::produce(edm::Event& e, const edm::EventSetup& eventSetup) 
   std::mt19937 eng(rd()); // seed the generator
   std::uniform_real_distribution<> randomFloat(0, 1);
 
-  float VALUE[8] = { 0.007033016375,
-                     0.01523827125,
-                     0.0175825075,
-                     0.01523827125,
-                     0.0210990625,
-                     0.0246156175,
-                     0.05040194875,
-                     0.05509202625
-                     };
+  float VALUE[4] = { 0.00089085,
+                     0.00131285,
+                     0.00182855,
+                     0.0042198};
 
   // Crosstalk with deadtime multiflied by some number
   //float multiplier = 1.; // 50BX
   //float multiplier = 0.5; // 25BX
-  float multiplier = 0.4; // 20BX
   //float multiplier = 0.1; // 50BX with 10 times reduced rate
   //float multiplier = 0.05; // 25BX with 10 times reduced rate
 
@@ -192,10 +186,11 @@ void GEMDigiProducer::produce(edm::Event& e, const edm::EventSetup& eventSetup) 
     // The values from gemDPG_phase2_20200303.pdf X ===> Updated : see last slide in https://docs.google.com/presentation/d/1AfmQ1uDBZWHX0DdL1rtaHb3ILIKKVu_KFY_vjYsGj00/edit#slide=id.g8a6032e479_0_1
     const GEMDetId detId(roll->id());
     if (detId.station() != 2) continue;
-    auto randomNumber = randomFloat(eng);
-    int idx = (detId.roll()-1) / 2;
     Key4D key(detId.region(), detId.station(), detId.chamber(), (detId.roll()-1)/4);
-    if ( randomNumber < percentage * VALUE[idx] * multiplier ) moduleMask[key] = true;
+    if ( moduleMask.find(key) != moduleMask.end() ) continue;
+    auto randomNumber = randomFloat(eng);
+    int idx = (detId.roll()-1) / 4;
+    if ( randomNumber < percentage * VALUE[idx] ) moduleMask[key] = true;
   }
 
   //////////////////// double pol end
