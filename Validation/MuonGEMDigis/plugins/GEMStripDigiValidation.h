@@ -3,6 +3,8 @@
 
 #include "Validation/MuonGEMHits/interface/GEMBaseValidation.h"
 #include "DataFormats/GEMDigi/interface/GEMDigiCollection.h"
+#include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
+#include "SimDataFormats/Track/interface/SimTrackContainer.h"
 
 class GEMStripDigiValidation : public GEMBaseValidation {
 public:
@@ -15,6 +17,8 @@ private:
   // ParameterSet
   edm::EDGetTokenT<GEMDigiCollection> strip_token_;
   edm::EDGetTokenT<edm::PSimHitContainer> simhit_token_;
+  edm::EDGetTokenT<edm::SimTrackContainer> simtrack_token_;
+  edm::EDGetTokenT<edm::SimVertexContainer> simvertex_token_;
   edm::ESGetToken<GEMGeometry, MuonGeometryRecord> geomToken_;
   edm::ESGetToken<GEMGeometry, MuonGeometryRecord> geomTokenBeginRun_;
 
@@ -22,6 +26,7 @@ private:
 
   // Occupaancy
   MEMap1Ids me_occ_zr_;
+  MEMap1Ids me_occ_sim_zr_;
   MEMap2Ids me_occ_det_;
   MEMap2Ids me_occ_pad_det_;
   MEMap3Ids me_detail_occ_xy_;
@@ -30,6 +35,8 @@ private:
 
   // Bunch Crossing
   MonitorElement* me_bx_;
+  MonitorElement* me_sim_;
+  MonitorElement* me_sim_occ_zr_;
   MEMap3Ids me_detail_bx_;
 
   // occupancy plots for efficiency (muon simhit - strip digi matching)

@@ -7,6 +7,14 @@ GEMStripDigiValidation::GEMStripDigiValidation(const edm::ParameterSet& pset)
   const auto& strip_tag = strip_pset.getParameter<edm::InputTag>("inputTag");
   strip_token_ = consumes<GEMDigiCollection>(strip_tag);
 
+  const auto& simtrack_pset = pset.getParameterSet("simObj");
+  const auto& simtrack_tag = simtrack_pset.getParameter<edm::InputTag>("inputTag");
+  simtrack_token_ = consumes<edm::SimTrackContainer>(simtrack_tag);
+
+  const auto& simvertex_pset = pset.getParameterSet("simObj");
+  const auto& simvertex_tag = simvertex_pset.getParameter<edm::InputTag>("inputTag");
+  simvertex_token_ = consumes<edm::SimVertexContainer>(simvertex_tag);
+
   const auto& simhit_pset = pset.getParameterSet("gemSimHit");
   const auto& simhit_tag = simhit_pset.getParameter<edm::InputTag>("inputTag");
   simhit_token_ = consumes<edm::PSimHitContainer>(simhit_tag);
@@ -27,6 +35,8 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
   booker.setCurrentFolder("MuonGEMDigisV/GEMDigisTask/Strip/BunchCrossing");
 
   me_bx_ = booker.book1D("strip_bx", "Strip Digi Bunch Crossing", 5, -2.5, 2.5);
+  me_sim_ = booker.book1D("sim_process", "Generating process of the non-muon hits", 30, -0.5, 29.5);
+  me_sim_occ_zr_ = booker.book2D("sim_occ_zr", "Generation position of the non-muon hits", 50, 300, 900, 50, 100, 400);
 
   if (detail_plot_) {
     for (const auto& region : gem->regions()) {
@@ -178,6 +188,20 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     return;
   }
 
+  edm::Handle<edm::SimTrackContainer> simtrack_container;
+  event.getByToken(simtrack_token_, simtrack_container);
+  if (not simtrack_container.isValid()) {
+    edm::LogError(kLogCategory_) << "Failed to get SimTrackContainer." << std::endl;
+    return;
+  }
+
+  edm::Handle<edm::SimVertexContainer> simvertex_container;
+  event.getByToken(simvertex_token_, simvertex_container);
+  if (not simvertex_container.isValid()) {
+    edm::LogError(kLogCategory_) << "Failed to get SimVertexContainer." << std::endl;
+    return;
+  }
+
   edm::Handle<GEMDigiCollection> digi_collection;
   event.getByToken(strip_token_, digi_collection);
   if (not digi_collection.isValid()) {
@@ -245,8 +269,48 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
 
   // NOTE
   for (const auto& simhit : *simhit_container.product()) {
-    if (not isMuonSimHit(simhit))
+    if (not isMuonSimHit(simhit)) {
+      int count = 0;
+      auto track_id = simhit.trackId();
+      auto track = (*simtrack_container).at(0);
+      for (auto trk : *simtrack_container) {
+        if (trk.trackId() == track_id) track = trk;
+      }
+      int tag = -1;
+      auto process = simhit.processType();
+
+      GEMDetId simhit_gemid(simhit.detUnitId());
+      const GEMEtaPartition* roll = gem->etaPartition(simhit_gemid);
+
+      const auto& simhit_local_pos = simhit.localPosition();
+      const auto& global_pos = roll->surface().toGlobal(simhit_local_pos);
+      auto pos_x = global_pos.x();
+      auto pos_y = global_pos.y();
+      auto pos_z = global_pos.z();
+      Int_t region_id = simhit_gemid.region();
+      
+      while (tag != 0) {
+        if (count++ > 100) break;
+        auto vertex_id = track.vertIndex();
+        auto vertex = (*simvertex_container).at(vertex_id);
+        //std::cout << Form("Track_id : %d ::: Vertex Index : %d ::: Parent Index : %d", int(track.trackId()), int(track.vertIndex()), int(vertex.parentIndex())) << std::endl;
+        //std::cout << Form("Track : %d ::: Process : %d", int(track.type()), int(vertex.processType())) << std::endl;
+        tag = vertex.processType();
+        if (vertex.noParent()) break;
+        track_id = vertex.parentIndex();
+        for (auto trk : *simtrack_container) {
+          if (trk.trackId() == track_id) track = trk;
+        }
+        process = vertex.processType();
+        pos_x = vertex.position().x();
+        pos_y = vertex.position().y();
+        pos_z = vertex.position().z();
+        //track = (*simtrack_container).at(vertex.parentIndex());
+      }
+      me_sim_occ_zr_->Fill( pos_z, sqrt(pos_x*pos_x + pos_y*pos_y) );
+      me_sim_->Fill(process);
       continue;
+    }
 
     if (gem->idToDet(simhit.detUnitId()) == nullptr) {
       edm::LogError(kLogCategory_) << "SimHit did not match with GEMGeometry." << std::endl;
