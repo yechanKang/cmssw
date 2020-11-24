@@ -9,6 +9,7 @@ gemStripValidation = DQMEDAnalyzer('GEMStripDigiValidation',
   detailPlot = cms.bool(True),
   gemStripDigi = muonGEMDigiPSet.gemUnpackedStripDigi,
   gemSimHit = muonSimHitMatcherPSet.gemSimHit,
+  gemDigiSimLink = muonSimHitMatcherPSet.gemDigiSimLink,
 )
 
 gemPadValidation = DQMEDAnalyzer('GEMPadDigiValidation',
