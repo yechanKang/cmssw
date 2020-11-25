@@ -120,9 +120,9 @@ void GEMPadDigiClusterValidation::analyze(const edm::Event& event, const edm::Ev
     return;
   }
 
-  for (auto range_iter = collection->begin(); range_iter != collection->end(); range_iter++) {
-    GEMDetId gemid = (*range_iter).first;
-    const auto& range = (*range_iter).second;
+  for (const auto& etaPart : *collection) {
+    GEMDetId gemid = etaPart.first;
+    const auto& range = etaPart.second;
 
     if (gem->idToDet(gemid) == nullptr) {
       edm::LogError(kLogCategory_) << "Getting DetId failed. Discard this gem pad hit. "

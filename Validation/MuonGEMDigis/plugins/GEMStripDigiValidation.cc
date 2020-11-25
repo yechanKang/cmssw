@@ -196,8 +196,8 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
   }
 
   // NOTE
-  for (auto range_iter = digi_collection->begin(); range_iter != digi_collection->end(); range_iter++) {
-    GEMDetId id = (*range_iter).first;
+  for (const auto& etaPart : *digi_collection) {
+    GEMDetId id = etaPart.first;
     if (gem->idToDet(id) == nullptr) {
       edm::LogError(kLogCategory_) << "Getting DetId failed. Discard this gem strip hit. Maybe it comes "
                                    << "from unmatched geometry." << std::endl;
@@ -217,7 +217,7 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     const BoundPlane& surface = gem->idToDet(id)->surface();
     const GEMEtaPartition* roll = gem->etaPartition(id);
 
-    const GEMDigiCollection::Range& range = (*range_iter).second;
+    const GEMDigiCollection::Range& range = etaPart.second;
     for (auto digi = range.first; digi != range.second; ++digi) {
       Int_t strip = digi->strip();
       Int_t bx = digi->bx();
@@ -283,8 +283,8 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     if (links == digiSimLink->end())
       continue;
 
-    for (auto link = links->begin(); link != links->end(); link++) {
-      if (simhit_trackId == link->getTrackId()) {
+    for (const auto& link : *links) {
+      if (simhit_trackId == link.getTrackId()) {
         me_strip_occ_eta_[region_id]->Fill(simhit_g_eta);
         me_strip_occ_phi_[key2]->Fill(simhit_g_phi);
         me_strip_occ_det_[key2]->Fill(bin_x, roll_id);
