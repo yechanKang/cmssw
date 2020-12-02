@@ -35,45 +35,43 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
       auto tof_name = TString::Format("tof_muon_st%d", station_id);
       auto tof_title = TString::Format("SimHit Time Of Flight (Muon only) : Station %d", station_id);
 
-      me_tof_mu_[station_id] = booker.book1D(tof_name, tof_title, 40, tof_min, tof_max);
+      me_tof_mu_st_[station_id] = booker.book1D(tof_name, tof_title, 20, tof_min, tof_max);
     }  // end for
   }    // end else
 
-  if (detail_plot_) {
-    for (const auto& region : gem->regions()) {
-      Int_t region_id = region->region();
+  for (const auto& region : gem->regions()) {
+    Int_t region_id = region->region();
 
-      for (const auto& station : region->stations()) {
-        Int_t station_id = station->station();
+    for (const auto& station : region->stations()) {
+      Int_t station_id = station->station();
 
-        const auto [tof_min, tof_max] = getTOFRange(station_id);
-        const auto& superChamberVec = station->superChambers();
-        if (superChamberVec.empty() || superChamberVec.front() == nullptr) {
-          edm::LogError(kLogCategory_) << "Super chambers missing or null for region = " << region_id
-                                       << " and station = " << station_id;
-        } else {
-          const GEMSuperChamber* super_chamber = superChamberVec.front();
+      const auto [tof_min, tof_max] = getTOFRange(station_id);
+      const auto& superChamberVec = station->superChambers();
+      if (superChamberVec.empty() || superChamberVec.front() == nullptr) {
+        edm::LogError(kLogCategory_) << "Super chambers missing or null for region = " << region_id
+                                     << " and station = " << station_id;
+      } else {
+        const GEMSuperChamber* super_chamber = superChamberVec.front();
 
-          for (const auto& chamber : super_chamber->chambers()) {
-            Int_t layer_id = chamber->id().layer();
-            ME3IdsKey key3{region_id, station_id, layer_id};
+        for (const auto& chamber : super_chamber->chambers()) {
+          Int_t layer_id = chamber->id().layer();
+          ME3IdsKey key3{region_id, station_id, layer_id};
 
-            me_detail_tof_[key3] = bookHist1D(
-                booker, key3, "tof", "Time of Flight of Muon SimHits", 40, tof_min, tof_max, tof_xtitle, tof_ytitle);
+          me_tof_[key3] = bookHist1D(
+              booker, key3, "tof", "Time of Flight of Muon SimHits", 20, tof_min, tof_max, tof_xtitle, tof_ytitle);
 
-            me_detail_tof_mu_[key3] = bookHist1D(
-                booker, key3, "tof_muon", "SimHit TOF (Muon only)", 40, tof_min, tof_max, tof_xtitle, tof_ytitle);
-          }  // chamber loop
-        }    // end else
-      }      // station loop
-    }        // region loop
-  }          // detail plot
+          me_tof_mu_[key3] = bookHist1D(
+              booker, key3, "tof_muon", "SimHit TOF (Muon only)", 20, tof_min, tof_max, tof_xtitle, tof_ytitle);
+        }  // chamber loop
+      }    // end else
+    }      // station loop
+  }        // region loop
 
   // NOTE Energy Loss
   booker.setCurrentFolder("MuonGEMHitsV/GEMHitsTask/EnergyLoss");
 
   TString eloss_xtitle = "Energy loss [eV]";
-  TString eloss_ytitle = "Entries / 100 eV";
+  TString eloss_ytitle = "Entries / 0.5 keV";
 
   for (const auto& station : gem->regions()[0]->stations()) {
     Int_t station_id = station->station();
@@ -82,7 +80,7 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
     auto eloss_title = TString::Format("SimHit Energy Loss (Muon only) : Station %d", station_id);
 
     me_eloss_mu_[station_id] =
-        booker.book1D(eloss_name, eloss_title + ";" + eloss_xtitle + ";" + eloss_ytitle, 60, 0.0, 6000.0);
+        booker.book1D(eloss_name, eloss_title + ";" + eloss_xtitle + ";" + eloss_ytitle, 20, 0.0, 10.0);
   }  // station loop
 
   if (detail_plot_) {
@@ -100,17 +98,10 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
             ME3IdsKey key3{region_id, station_id, layer_id};
 
             me_detail_eloss_[key3] =
-                bookHist1D(booker, key3, "eloss", "SimHit Energy Loss", 60, 0.0, 6000.0, eloss_xtitle, eloss_ytitle);
+                bookHist1D(booker, key3, "eloss", "SimHit Energy Loss", 20, 0.0, 10.0, eloss_xtitle, eloss_ytitle);
 
-            me_detail_eloss_mu_[key3] = bookHist1D(booker,
-                                                   key3,
-                                                   "eloss_muon",
-                                                   "SimHit Energy Loss (Muon Only)",
-                                                   60,
-                                                   0.0,
-                                                   6000.0,
-                                                   eloss_xtitle,
-                                                   eloss_ytitle);
+            me_detail_eloss_mu_[key3] = bookHist1D(
+                booker, key3, "eloss_muon", "SimHit Energy Loss (Muon Only)", 20, 0.0, 10.0, eloss_xtitle, eloss_ytitle);
 
           }  // chamber loop
         }    // end else
@@ -121,16 +112,20 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
   // NOTE Occupancy
   booker.setCurrentFolder("MuonGEMHitsV/GEMHitsTask/Occupancy");
 
+  me_total_hits_ = booker.book1D("total_hits", "Total number of hits on GEM", 100, -0.5, 99.5);
+
   for (const auto& region : gem->regions()) {
     Int_t region_id = region->region();
 
-    me_occ_zr_[region_id] = bookZROccupancy(booker, region_id, "simhit", "SimHit");
+    if (detail_plot_)
+      me_detail_occ_zr_[region_id] = bookZROccupancy(booker, region_id, "simhit", "SimHit");
 
     for (const auto& station : region->stations()) {
       Int_t station_id = station->station();
       ME2IdsKey key2{region_id, station_id};
 
-      me_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "simhit", "SimHit");
+      if (detail_plot_)
+        me_detail_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "simhit", "SimHit");
 
       const auto& superChamberVec = station->superChambers();
       if (superChamberVec.empty() || superChamberVec.front() == nullptr) {
@@ -140,9 +135,28 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
         const GEMSuperChamber* super_chamber = superChamberVec.front();
         for (const auto& chamber : super_chamber->chambers()) {
           Int_t layer_id = chamber->id().layer();
+          Int_t num_eta_partitions = chamber->nEtaPartitions();
           ME3IdsKey key3{region_id, station_id, layer_id};
 
           me_occ_xy_[key3] = bookXYOccupancy(booker, key3, "simhit", "SimHit");
+
+          me_occ_ieta_[key3] = bookHist1D(booker,
+                                          key3,
+                                          "simhit_ieta_occ",
+                                          "SimHit Occupancy per eta partition",
+                                          num_eta_partitions,
+                                          0.5,
+                                          num_eta_partitions + 0.5,
+                                          "i_{#eta}");
+
+          me_occ_phi_vfat_[key3] = bookHist1D(booker,
+                                              key3,
+                                              "simhit_phi_vfat_occ",
+                                              "SimHit Phi Occupancy in vfat resolution",
+                                              108,
+                                              -M_PI,
+                                              M_PI,
+                                              "#phi [rad]");
         }  // layer loop
       }    // end else
     }      // station loop
@@ -166,6 +180,7 @@ void GEMSimHitValidation::analyze(const edm::Event& event, const edm::EventSetup
     return;
   }
 
+  Int_t total_simhit = 0;
   for (const auto& simhit : *simhit_container.product()) {
     const GEMDetId gemid(simhit.detUnitId());
 
@@ -191,30 +206,31 @@ void GEMSimHitValidation::analyze(const edm::Event& event, const edm::EventSetup
     Float_t simhit_g_abs_z = std::fabs(simhit_global_pos.z());
 
     Float_t energy_loss = kEnergyCF_ * simhit.energyLoss();
+    energy_loss = energy_loss > 10 ? 9.9 : energy_loss;
     Float_t tof = simhit.timeOfFlight();
 
     // NOTE Fill MonitorElement
     Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
 
-    me_occ_zr_[region_id]->Fill(simhit_g_abs_z, simhit_g_r);
-    me_occ_det_[key2]->Fill(bin_x, roll_id);
     me_occ_xy_[key3]->Fill(simhit_g_x, simhit_g_y);
+    me_tof_[key3]->Fill(tof);
+    me_tof_mu_[key3]->Fill(tof);
 
     bool is_muon_simhit = isMuonSimHit(simhit);
     if (is_muon_simhit) {
-      me_tof_mu_[station_id]->Fill(tof);
+      me_tof_mu_st_[station_id]->Fill(tof);
       me_eloss_mu_[station_id]->Fill(energy_loss);
     }
 
     if (detail_plot_) {
-      me_detail_tof_[key3]->Fill(tof);
-      me_detail_eloss_[key3]->Fill(energy_loss);
+      me_detail_occ_zr_[region_id]->Fill(simhit_g_abs_z, simhit_g_r);
+      me_detail_occ_det_[key2]->Fill(bin_x, roll_id);
 
       if (is_muon_simhit) {
-        me_detail_tof_mu_[key3]->Fill(tof);
         me_detail_eloss_mu_[key3]->Fill(energy_loss);
       }
 
     }  // detail_plot
   }    // simhit loop
+  me_total_hits_->Fill(total_simhit);
 }

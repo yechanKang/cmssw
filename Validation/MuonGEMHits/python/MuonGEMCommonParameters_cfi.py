@@ -2,6 +2,8 @@ import FWCore.ParameterSet.Config as cms
 
 
 GEMValidationCommonParameters = cms.PSet(
+    #detail plot
+    detailPlot = cms.bool(False),
     # ZR occupancy plots
     ZROccRange = cms.untracked.vdouble(
     #   xlow, xup, ylow, yup

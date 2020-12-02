@@ -34,28 +34,37 @@ void GEMRecHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
 
   me_cls_ = booker.book1D("cls", cls_title + ";" + cls_x_title + ";" + "Entries", 11, -0.5, 10.5);
 
-  if (detail_plot_) {
-    for (const auto& region : gem->regions()) {
-      Int_t region_id = region->region();
+  for (const auto& region : gem->regions()) {
+    Int_t region_id = region->region();
 
-      for (const auto& station : region->stations()) {
-        Int_t station_id = station->station();
+    for (const auto& station : region->stations()) {
+      Int_t station_id = station->station();
 
-        const auto& superChamberVec = station->superChambers();
-        if (superChamberVec.empty() || superChamberVec[0] == nullptr) {
-          edm::LogError(kLogCategory_) << "Super chambers missing or null for region = " << region_id
-                                       << " and station = " << station_id;
-        } else {
-          for (const auto& chamber : superChamberVec[0]->chambers()) {
-            Int_t layer_id = chamber->id().layer();
-            ME3IdsKey key3{region_id, station_id, layer_id};
+      const auto& superChamberVec = station->superChambers();
+      if (superChamberVec.empty() || superChamberVec[0] == nullptr) {
+        edm::LogError(kLogCategory_) << "Super chambers missing or null for region = " << region_id
+                                     << " and station = " << station_id;
+      } else {
+        for (const auto& chamber : superChamberVec[0]->chambers()) {
+          Int_t layer_id = chamber->id().layer();
+          ME3IdsKey key3{region_id, station_id, layer_id};
 
+          Int_t num_eta_partitions = chamber->nEtaPartitions();
+
+          me_cls_ieta_[key3] = bookHist1D(booker,
+                                          key3,
+                                          "total_cls",
+                                          "Total Cluster Size per eta parition",
+                                          num_eta_partitions,
+                                          0.5,
+                                          num_eta_partitions + 0.5);
+
+          if (detail_plot_)
             me_detail_cls_[key3] = bookHist1D(booker, key3, "cls", cls_title, 11, -0.5, 10.5, cls_x_title);
-          }  // chamber loop
-        }    // end else
-      }      // station loop
-    }        // region loop
-  }          // detail plot
+        }  // chamber loop
+      }    // end else
+    }      // station loop
+  }        // region loop
 
   // NOTE Residual
   booker.setCurrentFolder("MuonGEMRecHitsV/GEMRecHitsTask/Residual");
@@ -67,29 +76,38 @@ void GEMRecHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
         bookHist1D(booker, region_id, "residual_x", "Residual in X", 120, -3, 3, "Residual in X [cm]");
 
     me_residual_y_[region_id] =
-        bookHist1D(booker, region_id, "residual_y", "Residual in Y", 600, -15, 15, "Residual in Y [cm]");
+        bookHist1D(booker, region_id, "residual_y", "Residual in Y", 120, -15, 15, "Residual in Y [cm]");
 
-    if (detail_plot_) {
-      for (const auto& station : region->stations()) {
-        Int_t station_id = station->station();
+    for (const auto& station : region->stations()) {
+      Int_t station_id = station->station();
 
-        const auto& superChamberVec = station->superChambers();
-        if (!superChamberVec.empty() && superChamberVec[0] != nullptr) {
-          for (const auto& chamber : superChamberVec[0]->chambers()) {
-            Int_t layer_id = chamber->id().layer();
-            ME3IdsKey key3{region_id, station_id, layer_id};
+      const auto& superChamberVec = station->superChambers();
+      if (!superChamberVec.empty() && superChamberVec[0] != nullptr) {
+        for (const auto& chamber : superChamberVec[0]->chambers()) {
+          Int_t layer_id = chamber->id().layer();
+          ME3IdsKey key3{region_id, station_id, layer_id};
 
-            // Occupancy histograms of SimHits and RecHits for Efficiency
+          if (detail_plot_) {
             me_detail_residual_x_[key3] =
                 bookHist1D(booker, key3, "residual_x", "Residual in X", 120, -3, 3, "Residual in X [cm]");
 
             me_detail_residual_y_[key3] =
-                bookHist1D(booker, key3, "residual_y", "Residual in Y", 600, -15, 15, "Residual in Y [cm]");
+                bookHist1D(booker, key3, "residual_y", "Residual in Y", 120, -15, 15, "Residual in Y [cm]");
+          }
 
-          }  // chamber loop
-        }    // end if
-      }      // station loop
-    }        // detail_plot
+          for (const auto& roll : chamber->etaPartitions()) {
+            Int_t roll_id = roll->id().roll();
+            ME4IdsKey key4{region_id, station_id, layer_id, roll_id};
+
+            me_roll_residual_x_[key4] =
+                bookHist1D(booker, key4, "residual_x", "Residual in X", 120, -3, 3, "Residual in X [cm]");
+
+            me_roll_residual_y_[key4] =
+                bookHist1D(booker, key4, "residual_y", "Residual in Y", 120, -15, 15, "Residual in Y [cm]");
+          }  // roll loop
+        }    // chamber loop
+      }      // end if
+    }        // station loop
   }          // region loop
 
   // NOTE Pull
@@ -127,56 +145,72 @@ void GEMRecHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
   for (const auto& region : gem->regions()) {
     Int_t region_id = region->region();
 
-    me_occ_zr_[region_id] = bookZROccupancy(booker, region_id, "rechit", "RecHit");
+    if (detail_plot_)
+      me_detail_occ_zr_[region_id] = bookZROccupancy(booker, region_id, "rechit", "RecHit");
 
-    me_simhit_occ_eta_[region_id] = bookHist1D(booker,
-                                               region_id,
-                                               "muon_simhit_occ_eta",
-                                               "Muon SimHit Eta Occupancy",
-                                               50,
-                                               eta_range_[0],
-                                               eta_range_[1],
-                                               "|#eta|");
-
-    me_rechit_occ_eta_[region_id] = bookHist1D(booker,
-                                               region_id,
-                                               "matched_rechit_occ_eta",
-                                               "Matched RecHit Eta Occupancy",
-                                               50,
-                                               eta_range_[0],
-                                               eta_range_[1],
-                                               "|#eta|");
-
+    // Occupancy histograms of SimHits and RecHits for Efficiency
     for (const auto& station : region->stations()) {
       Int_t station_id = station->station();
       ME2IdsKey key2{region_id, station_id};
 
-      me_simhit_occ_phi_[key2] =
-          bookHist1D(booker, key2, "muon_simhit_occ_phi", "Muon SimHit Phi Occupancy", 51, -M_PI, M_PI, "#phi");
-
-      me_rechit_occ_phi_[key2] =
-          bookHist1D(booker, key2, "matched_rechit_occ_phi", "Matched RecHit Phi Occupancy", 51, -M_PI, M_PI, "#phi");
-
-      me_simhit_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "muon_simhit", "Muon SimHit");
-
-      me_rechit_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "matched_rechit", "Matched RecHit");
-
       if (detail_plot_) {
-        const auto& superChamberVec = station->superChambers();
-        if (!superChamberVec.empty() && superChamberVec[0] != nullptr) {
-          for (const auto& chamber : superChamberVec[0]->chambers()) {
-            Int_t layer_id = chamber->id().layer();
-            ME3IdsKey key3{region_id, station_id, layer_id};
+        me_detail_simhit_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "muon_simhit", "Muon SimHit");
 
-            me_detail_occ_xy_[key3] = bookXYOccupancy(booker, key3, "rechit", "RecHit");
+        me_detail_rechit_occ_det_[key2] =
+            bookDetectorOccupancy(booker, key2, station, "matched_rechit", "Matched RecHit");
+      }
 
+      const auto& superChamberVec = station->superChambers();
+      if (!superChamberVec.empty() && superChamberVec[0] != nullptr) {
+        for (const auto& chamber : superChamberVec[0]->chambers()) {
+          Int_t layer_id = chamber->id().layer();
+          ME3IdsKey key3{region_id, station_id, layer_id};
+
+          Int_t num_eta_partitions = chamber->nEtaPartitions();
+
+          me_occ_xy_[key3] = bookXYOccupancy(booker, key3, "rechit", "RecHit");
+
+          me_occ_ieta_[key3] = bookHist1D(booker,
+                                          key3,
+                                          "rechit_occ_ieta",
+                                          "Rechit Occupancy per eta partition",
+                                          num_eta_partitions,
+                                          0.5,
+                                          num_eta_partitions + 0.5);
+
+          me_occ_phi_vfat_[key3] = bookHist1D(
+              booker, key3, "rechit_occ_phi_vfat", "Rechit Phi Occupancy in vfat resolution", 108, -M_PI, M_PI);
+
+          me_simhit_occ_eta_[key3] = bookHist1D(booker,
+                                                key3,
+                                                "muon_simhit_occ_eta",
+                                                "Muon SimHit Eta Occupancy",
+                                                16,
+                                                eta_range_[0],
+                                                eta_range_[1],
+                                                "|#eta|");
+
+          me_rechit_occ_eta_[key3] = bookHist1D(booker,
+                                                key3,
+                                                "matched_rechit_occ_eta",
+                                                "Matched RecHit Eta Occupancy",
+                                                16,
+                                                eta_range_[0],
+                                                eta_range_[1],
+                                                "|#eta|");
+
+          me_simhit_occ_phi_[key3] =
+              bookHist1D(booker, key3, "muon_simhit_occ_phi", "Muon SimHit Phi Occupancy", 36, -M_PI, M_PI, "#phi");
+
+          me_rechit_occ_phi_[key3] = bookHist1D(
+              booker, key3, "matched_rechit_occ_phi", "Matched RecHit Phi Occupancy", 36, -M_PI, M_PI, "#phi");
+
+          if (detail_plot_)
             me_detail_occ_polar_[key3] = bookPolarOccupancy(booker, key3, "rechit", "RecHit");
-
-          }  // chamber loop
-        }    // end if
-      }      // detail plot
-    }        // station loop
-  }          // region_loop
+        }  // chamber loop
+      }    // end if
+    }      // station loop
+  }        // region_loop
 }
 
 Bool_t GEMRecHitValidation::matchRecHitAgainstSimHit(GEMRecHitCollection::const_iterator rechit, Int_t simhit_strip) {
@@ -224,6 +258,7 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
     Int_t region_id = gem_id.region();
     Int_t station_id = gem_id.station();
     Int_t layer_id = gem_id.layer();
+    Int_t roll_id = gem_id.roll();
 
     ME2IdsKey key2{region_id, station_id};
     ME3IdsKey key3{region_id, station_id, layer_id};
@@ -239,12 +274,19 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
 
     Int_t cls = rechit.clusterSize();
 
+    me_cls_ieta_[key3]->Fill(roll_id, cls);
+
+    // overflow handling for cluster size
+    cls = cls > 10 ? 10 : cls;
     me_cls_->Fill(cls);
-    me_occ_zr_[region_id]->Fill(rechit_g_abs_z, rechit_g_r);
+
+    me_occ_xy_[key3]->Fill(rechit_g_x, rechit_g_y);
+    me_occ_ieta_[key3]->Fill(roll_id);
+    me_occ_phi_vfat_[key3]->Fill(rechit_g_phi);
 
     if (detail_plot_) {
+      me_detail_occ_zr_[region_id]->Fill(rechit_g_abs_z, rechit_g_r);
       me_detail_cls_[key3]->Fill(cls);
-      me_detail_occ_xy_[key3]->Fill(rechit_g_x, rechit_g_y);
       me_detail_occ_polar_[key3]->Fill(rechit_g_phi, rechit_g_r);
     }  // detail plot
   }
@@ -270,6 +312,7 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
 
     ME2IdsKey key2{region_id, station_id};
     ME3IdsKey key3{region_id, station_id, layer_id};
+    ME4IdsKey key4{region_id, station_id, layer_id, roll_id};
 
     const LocalPoint& simhit_local_pos = simhit.localPosition();
     const GlobalPoint& simhit_global_pos = surface.toGlobal(simhit_local_pos);
@@ -281,9 +324,10 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
 
     Int_t det_occ_bin_x = getDetOccBinX(chamber_id, layer_id);
 
-    me_simhit_occ_eta_[region_id]->Fill(simhit_g_abs_eta);
-    me_simhit_occ_phi_[key2]->Fill(simhit_g_phi);
-    me_simhit_occ_det_[key2]->Fill(det_occ_bin_x, roll_id);
+    me_simhit_occ_eta_[key3]->Fill(simhit_g_abs_eta);
+    me_simhit_occ_phi_[key3]->Fill(simhit_g_phi);
+    if (detail_plot_)
+      me_detail_simhit_occ_det_[key2]->Fill(det_occ_bin_x, roll_id);
 
     auto links = digiSimLink->find(simhit_gemid);
     if (links == digiSimLink->end())
@@ -318,14 +362,17 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
 
         me_residual_x_[region_id]->Fill(residual_x);
         me_residual_y_[region_id]->Fill(residual_y);
+        me_roll_residual_x_[key4]->Fill(residual_x);
+        me_roll_residual_y_[key4]->Fill(residual_y);
         me_pull_x_[region_id]->Fill(pull_x);
         me_pull_y_[region_id]->Fill(pull_y);
 
-        me_rechit_occ_eta_[region_id]->Fill(simhit_g_abs_eta);
-        me_rechit_occ_phi_[key2]->Fill(simhit_g_phi);
-        me_rechit_occ_det_[key2]->Fill(det_occ_bin_x, roll_id);
+        me_rechit_occ_eta_[key3]->Fill(simhit_g_abs_eta);
+        me_rechit_occ_phi_[key3]->Fill(simhit_g_phi);
 
         if (detail_plot_) {
+          me_detail_rechit_occ_det_[key2]->Fill(det_occ_bin_x, roll_id);
+
           me_detail_residual_x_[key3]->Fill(residual_x);
           me_detail_residual_y_[key3]->Fill(residual_y);
 
