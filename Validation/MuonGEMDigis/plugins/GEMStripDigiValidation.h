@@ -25,24 +25,20 @@ private:
   // NOTE Monitor elements
 
   // Occupaancy
+  MonitorElement* me_total_strip_;
+  MEMap3Ids me_total_strip_layer_;
   MEMap3Ids me_occ_ieta_;
-  MEMap3Ids me_occ_phi_vfat_;
-  MEMap3Ids me_occ_xy_;
+  MEMap3Ids me_occ_phi_;
 
+  MEMap3Ids me_detail_occ_xy_;
   MEMap1Ids me_detail_occ_zr_;
   MEMap2Ids me_detail_occ_det_;
   MEMap3Ids me_detail_occ_strip_;
-  MEMap3Ids me_detail_occ_phi_strip_;
 
   // Bunch Crossing
   MonitorElement* me_bx_;
-  MonitorElement* me_total_strip_;
   MEMap3Ids me_detail_bx_;
 
-  // occupancy plots for efficiency (muon simhit - strip digi matching)
-  MEMap3Ids me_simhit_occ_eta_;
-  MEMap3Ids me_simhit_occ_phi_;
-  MEMap2Ids me_detail_simhit_occ_det_;
   // Strip that matches the SimHit
   MEMap3Ids me_strip_occ_eta_;
   MEMap3Ids me_strip_occ_phi_;

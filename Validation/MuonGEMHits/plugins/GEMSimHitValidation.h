@@ -30,13 +30,17 @@ private:
   MEMap3Ids me_tof_;
   MEMap3Ids me_tof_mu_;
   MEMap1Ids me_eloss_mu_;  // energy loss
-  MEMap3Ids me_occ_xy_;
   MEMap3Ids me_occ_ieta_;
-  MEMap3Ids me_occ_phi_vfat_;
+  MEMap3Ids me_occ_phi_;
+  MEMap3Ids me_mu_occ_eta_;
+  MEMap3Ids me_mu_occ_phi_;
+
   MEMap3Ids me_detail_eloss_;
   MEMap3Ids me_detail_eloss_mu_;
   MEMap1Ids me_detail_occ_zr_;  // occupancy
+  MEMap3Ids me_detail_occ_xy_;
   MEMap2Ids me_detail_occ_det_;
+  MEMap2Ids me_detail_mu_occ_det_;
 
   // Constants
   const Float_t kEnergyCF_ = 1e6f;  // energy loss conversion factor:

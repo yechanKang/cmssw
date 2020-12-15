@@ -12,6 +12,7 @@ MuonGEMDigisHarvestor::MuonGEMDigisHarvestor(const edm::ParameterSet& pset)
 MuonGEMDigisHarvestor::~MuonGEMDigisHarvestor() {}
 
 void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGetter& getter) {
+  TString simhit_occ_folder = "MuonGEMHitsV/GEMHitsTask/Occupancy/";
   TString occ_folder = "MuonGEMDigisV/GEMDigisTask/Strip/Occupancy/";
   TString eff_folder = "MuonGEMDigisV/GEMDigisTask/Strip/Efficiency/";
 
@@ -25,13 +26,14 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
         TString strip_det_name = "matched_strip_occ_det" + name_suffix_re_st;
         TString simhit_det_name = "muon_simhit_occ_det" + name_suffix_re_st;
         TString strip_det_path = occ_folder + strip_det_name;
-        TString simhit_det_path = occ_folder + simhit_det_name;
+        TString simhit_det_path = simhit_occ_folder + simhit_det_name;
         TString eff_det_name = "eff_det" + name_suffix_re_st;
         TString eff_det_title = "Detector Component Efficiency (Muon Only) :" + title_suffix_re_st;
 
         bookEff2D(booker, getter, strip_det_path, simhit_det_path, eff_folder, eff_det_name, eff_det_title);
       }
       for (Int_t layer_id : layer_ids_) {
+        if (station_id != 0 and layer_id > 2) continue;
         TString name_suffix_re_st_ly = GEMUtils::getSuffixName(region_id, station_id, layer_id);
         TString title_suffix_re_st_ly = GEMUtils::getSuffixTitle(region_id, station_id, layer_id);
 
@@ -39,7 +41,7 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
         TString strip_eta_name = "matched_strip_occ_eta" + name_suffix_re_st_ly;
         TString simhit_eta_name = "muon_simhit_occ_eta" + name_suffix_re_st_ly;
         TString strip_eta_path = occ_folder + strip_eta_name;
-        TString simhit_eta_path = occ_folder + simhit_eta_name;
+        TString simhit_eta_path = simhit_occ_folder + simhit_eta_name;
         TString eff_eta_name = "eff_eta" + name_suffix_re_st_ly;
         TString eff_eta_title = "Eta Efficiency (Muon Only) :" + title_suffix_re_st_ly;
 
@@ -49,7 +51,7 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
         TString strip_phi_name = "matched_strip_occ_phi" + name_suffix_re_st_ly;
         TString simhit_phi_name = "muon_simhit_occ_phi" + name_suffix_re_st_ly;
         TString strip_phi_path = occ_folder + strip_phi_name;
-        TString simhit_phi_path = occ_folder + simhit_phi_name;
+        TString simhit_phi_path = simhit_occ_folder + simhit_phi_name;
         TString eff_phi_name = "eff_phi" + name_suffix_re_st_ly;
         TString eff_phi_title = "Phi Efficiency (Muon Only) :" + title_suffix_re_st_ly;
 

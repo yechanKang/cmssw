@@ -101,7 +101,7 @@ void GEMPadDigiClusterValidation::bookHistograms(DQMStore::IBooker& booker,
           Int_t layer_id = chamber->id().layer();
           ME3IdsKey key3(region_id, station_id, layer_id);
           me_detail_bx_[key3] =
-              bookHist1D(booker, key3, "bx", "Pad Cluster Bunch Crossing", 5, -2.5, 2.5, "Bunch crossing");
+              bookHist1D(booker, key3, "bx", "Pad Cluster Bunch Crossing", 11, -10.5, 10.5, "Bunch crossing");
         }  // chamber loop
       }    // station loop
     }      // region loop
@@ -138,6 +138,7 @@ void GEMPadDigiClusterValidation::analyze(const edm::Event& event, const edm::Ev
     Int_t layer_id = gemid.layer();
     Int_t chamber_id = gemid.chamber();
     Int_t roll_id = gemid.roll();
+    Int_t num_chambers = gemid.nlayers();
 
     ME2IdsKey key2(region_id, station_id);
     ME3IdsKey key3(region_id, station_id, layer_id);
@@ -156,6 +157,9 @@ void GEMPadDigiClusterValidation::analyze(const edm::Event& event, const edm::Ev
 
       // bunch crossing
       Int_t bx = digi->bx();
+      // bunch corssing overflow & underflow
+      bx = bx < -10 ? -10 : bx;
+      bx = bx > 10 ? 10 : bx;
 
       const LocalPoint& local_pos = roll->centreOfPad(pad);
       const GlobalPoint& global_pos = surface.toGlobal(local_pos);
@@ -168,7 +172,7 @@ void GEMPadDigiClusterValidation::analyze(const edm::Event& event, const edm::Ev
 
       me_occ_zr_[region_id]->Fill(g_abs_z, g_r);
 
-      Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
+      Int_t bin_x = getDetOccBinX(num_chambers, chamber_id, layer_id);
       me_occ_det_[key2]->Fill(bin_x, roll_id);
 
       if (detail_plot_) {

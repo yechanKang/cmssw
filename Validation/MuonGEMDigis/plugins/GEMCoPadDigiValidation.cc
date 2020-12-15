@@ -85,7 +85,7 @@ void GEMCoPadDigiValidation::bookHistograms(DQMStore::IBooker& booker,
         ME2IdsKey key2{region_id, station_id};
 
         me_detail_bx_[key2] =
-            bookHist1D(booker, key2, "copad_bx", "CoPad Bunch Crossing", 5, -2.5, 2.5, "Bunch crossing");
+            bookHist1D(booker, key2, "copad_bx", "CoPad Bunch Crossing", 11, -11.5, 10.5, "Bunch crossing");
       }  // station loop
     }    // region loop
   }      // detail plot
@@ -113,6 +113,7 @@ void GEMCoPadDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     Int_t ring_id = gemid.ring();
     Int_t layer_id = gemid.layer();
     Int_t chamber_id = gemid.chamber();
+    Int_t num_chambers = gemid.nlayers();
 
     ME2IdsKey key2{region_id, station_id};
 
@@ -187,7 +188,7 @@ void GEMCoPadDigiValidation::analyze(const edm::Event& event, const edm::EventSe
       me_occ_zr_[region_id]->Fill(std::fabs(g_z1), g_r1);
       me_occ_zr_[region_id]->Fill(std::fabs(g_z2), g_r2);
 
-      Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
+      Int_t bin_x = getDetOccBinX(num_chambers, chamber_id, layer_id);
       me_occ_det_[key2]->Fill(bin_x, roll_id);
       me_occ_det_[key2]->Fill(bin_x + 1, roll_id);
 

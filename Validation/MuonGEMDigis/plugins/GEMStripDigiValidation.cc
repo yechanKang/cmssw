@@ -73,7 +73,7 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
   // NOTE Occupancy
   booker.setCurrentFolder("MuonGEMDigisV/GEMDigisTask/Strip/Occupancy");
 
-  me_total_strip_ = booker.book1D("total_strip", "Total number of Strip Digi per Event", 100, -0.5, 99.5);
+  me_total_strip_ = booker.book1D("total_strips_per_event", "Total number of Strip Digi per Event", 50, -0.5, 395.5);
 
   for (const auto& region : gem->regions()) {
     Int_t region_id = region->region();
@@ -86,8 +86,6 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
       ME2IdsKey key2{region_id, station_id};
 
       if (detail_plot_) {
-        me_detail_simhit_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "muon_simhit", "Muon SimHit");
-
         me_detail_strip_occ_det_[key2] =
             bookDetectorOccupancy(booker, key2, station, "matched_strip", "Matched Strip Digi");
 
@@ -118,8 +116,6 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
           Int_t num_strips = etaPartitionsVec.front()->nstrips();
           Int_t num_eta_partitions = chamber->nEtaPartitions();
 
-          me_occ_xy_[key3] = bookXYOccupancy(booker, key3, "strip", "Strip Digi");
-
           me_occ_ieta_[key3] = bookHist1D(booker,
                                           key3,
                                           "strip_ieta_occ",
@@ -129,41 +125,33 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
                                           num_eta_partitions + 0.5,
                                           "i_{#eta}");
 
-          me_occ_phi_vfat_[key3] = bookHist1D(booker,
-                                              key3,
-                                              "strip_phi_vfat_occ",
-                                              "Strip Digi Phi Occupancy in vfat resolution",
-                                              108,
-                                              -M_PI,
-                                              M_PI,
-                                              "#phi [rad]");
+          me_occ_phi_[key3] =
+              bookHist1D(booker, key3, "strip_phi_occ", "Strip Digi Phi Occupancy", 108, -5, 355, "#phi [degrees]");
 
-          // occupancy plots for eta efficiency
-          me_simhit_occ_eta_[key3] = bookHist1D(booker,
-                                                key3,
-                                                "muon_simhit_occ_eta",
-                                                "Muon SimHit Eta Occupancy",
-                                                16,
-                                                eta_range_[0],
-                                                eta_range_[1],
-                                                "|#eta|");
+          me_total_strip_layer_[key3] = bookHist1D(booker,
+                                                   key3,
+                                                   "total_strips_per_event",
+                                                   "Total nubmer of strip digis per event for each layers",
+                                                   50,
+                                                   -0.5,
+                                                   99.5);
 
+          // occupancy plots for efficiency
           me_strip_occ_eta_[key3] = bookHist1D(booker,
                                                key3,
                                                "matched_strip_occ_eta",
                                                "Matched Strip Digi Eta Occupancy",
                                                16,
-                                               eta_range_[0],
-                                               eta_range_[1],
+                                               eta_range_[station_id * 2 + 0],
+                                               eta_range_[station_id * 2 + 1],
                                                "|#eta|");
 
-          me_simhit_occ_phi_[key3] =
-              bookHist1D(booker, key3, "muon_simhit_occ_phi", "Muon SimHit Phi Occupancy", 36, -M_PI, M_PI, "#phi");
-
           me_strip_occ_phi_[key3] = bookHist1D(
-              booker, key3, "matched_strip_occ_phi", "Matched Strip Digi Phi Occupancy", 36, -M_PI, M_PI, "#phi");
+              booker, key3, "matched_strip_occ_phi", "Matched Strip Digi Phi Occupancy", 36, -5, 355, "#phi");
 
           if (detail_plot_) {
+            me_detail_occ_xy_[key3] = bookXYOccupancy(booker, key3, "strip", "Strip Digi");
+
             me_detail_occ_strip_[key3] = bookHist1D(booker,
                                                     key3,
                                                     "strip_occ_strip",
@@ -172,19 +160,6 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
                                                     0.5,
                                                     num_strips + 0.5,
                                                     "strip number");
-
-            me_detail_occ_phi_strip_[key3] = bookHist2D(booker,
-                                                        key3,
-                                                        "strip_occ_phi_strip",
-                                                        "Strip Digi Occupancy",
-                                                        280,
-                                                        -M_PI,
-                                                        M_PI,
-                                                        num_strips / 2,
-                                                        0,
-                                                        num_strips,
-                                                        "#phi [rad]",
-                                                        "strip number");
           }  // detail plot
         }    // chamber
       }      // end else
@@ -223,6 +198,7 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
 
   // NOTE
   Int_t total_strip = 0;
+  std::map<ME3IdsKey, Int_t> total_strip_layer;
   for (const auto& etaPart : *digi_collection) {
     GEMDetId id = etaPart.first;
     if (gem->idToDet(id) == nullptr) {
@@ -236,10 +212,11 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     Int_t station_id = id.station();
     Int_t chamber_id = id.chamber();
     Int_t roll_id = id.roll();
+    Int_t num_chambers = id.nlayers();
 
     ME2IdsKey key2{region_id, station_id};
     ME3IdsKey key3{region_id, station_id, layer_id};
-    Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
+    Int_t bin_x = getDetOccBinX(num_chambers, chamber_id, layer_id);
 
     const BoundPlane& surface = gem->idToDet(id)->surface();
     const GEMEtaPartition* roll = gem->etaPartition(id);
@@ -247,6 +224,7 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     const GEMDigiCollection::Range& range = etaPart.second;
     for (auto digi = range.first; digi != range.second; ++digi) {
       total_strip++;
+      total_strip_layer[key3]++;
       Int_t strip = digi->strip();
       Int_t bx = digi->bx();
       // bunch corssing overflow & underflow
@@ -259,23 +237,24 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
       Float_t digi_g_abs_z = std::abs(strip_global_pos.z());
       Float_t digi_g_x = strip_global_pos.x();
       Float_t digi_g_y = strip_global_pos.y();
-      Float_t digi_g_phi = strip_global_pos.phi();
+      Float_t digi_g_phi = toDegree(strip_global_pos.phi());
 
       me_bx_->Fill(bx);
-      me_occ_xy_[key3]->Fill(digi_g_x, digi_g_y);
       me_occ_ieta_[key3]->Fill(roll_id);
-      me_occ_phi_vfat_[key3]->Fill(digi_g_phi);
+      me_occ_phi_[key3]->Fill(digi_g_phi);
 
       if (detail_plot_) {
         me_detail_bx_[key3]->Fill(bx);
+        me_detail_occ_xy_[key3]->Fill(digi_g_x, digi_g_y);
         me_detail_occ_zr_[region_id]->Fill(digi_g_abs_z, digi_g_r);
         me_detail_occ_det_[key2]->Fill(bin_x, roll_id);
         me_detail_occ_strip_[key3]->Fill(strip);
-        me_detail_occ_phi_strip_[key3]->Fill(digi_g_phi, strip);
       }
     }
   }  // range loop
   me_total_strip_->Fill(total_strip);
+  for (auto [key, num_total_strip] : total_strip_layer)
+    me_total_strip_layer_[key]->Fill(num_total_strip);
 
   // NOTE
   for (const auto& simhit : *simhit_container.product()) {
@@ -294,6 +273,7 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     Int_t layer_id = simhit_gemid.layer();
     Int_t chamber_id = simhit_gemid.chamber();
     Int_t roll_id = simhit_gemid.roll();
+    Int_t num_chambers = simhit_gemid.nlayers();
 
     ME2IdsKey key2{region_id, station_id};
     ME3IdsKey key3{region_id, station_id, layer_id};
@@ -304,15 +284,11 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     const auto& simhit_global_pos = roll->surface().toGlobal(simhit_local_pos);
 
     Float_t simhit_g_eta = std::abs(simhit_global_pos.eta());
-    Float_t simhit_g_phi = simhit_global_pos.phi();
+    Float_t simhit_g_phi = toDegree(simhit_global_pos.phi());
 
     auto simhit_trackId = simhit.trackId();
 
-    Int_t bin_x = getDetOccBinX(chamber_id, layer_id);
-    me_simhit_occ_eta_[key3]->Fill(simhit_g_eta);
-    me_simhit_occ_phi_[key3]->Fill(simhit_g_phi);
-    if (detail_plot_)
-      me_detail_simhit_occ_det_[key2]->Fill(bin_x, roll_id);
+    Int_t bin_x = getDetOccBinX(num_chambers, chamber_id, layer_id);
 
     auto links = digiSimLink->find(simhit_gemid);
     if (links == digiSimLink->end())
