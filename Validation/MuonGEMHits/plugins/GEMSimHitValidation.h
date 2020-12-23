@@ -25,18 +25,25 @@ private:
   std::vector<Double_t> tof_range_;
 
   // Monitor elemnts
-  std::map<Int_t, MonitorElement*> me_tof_mu_;  // time of flight
-  MEMap3Ids me_detail_tof_;
-  MEMap3Ids me_detail_tof_mu_;
+  std::map<Int_t, MonitorElement*> me_tof_mu_st_;  // time of flight
+  MonitorElement* me_total_hits_;
+  MEMap3Ids me_tof_;
+  MEMap3Ids me_tof_mu_;
   MEMap1Ids me_eloss_mu_;  // energy loss
+  MEMap3Ids me_occ_ieta_;
+  MEMap3Ids me_occ_phi_;
+  MEMap3Ids me_mu_occ_eta_;
+  MEMap3Ids me_mu_occ_phi_;
+
   MEMap3Ids me_detail_eloss_;
   MEMap3Ids me_detail_eloss_mu_;
-  MEMap1Ids me_occ_zr_;  // occupancy
-  MEMap2Ids me_occ_det_;
-  MEMap3Ids me_occ_xy_;
+  MEMap1Ids me_detail_occ_zr_;  // occupancy
+  MEMap3Ids me_detail_occ_xy_;
+  MEMap2Ids me_detail_occ_det_;
+  MEMap2Ids me_detail_mu_occ_det_;
 
   // Constants
-  const Float_t kEnergyCF_ = 1e9f;  // energy loss conversion factor:
+  const Float_t kEnergyCF_ = 1e6f;  // energy loss conversion factor:
 };
 
 #endif  // Validation_MuonGEMHits_GEMSimHitValidation_h
