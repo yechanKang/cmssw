@@ -18,10 +18,6 @@ muonSimHitMatcherPSet = cms.PSet(
         simMuOnly = cms.bool(True),
         discardEleHits = cms.bool(True),
     ),
-    gemDigiSimLink = cms.PSet(
-        verbose = cms.int32(0),
-        inputTag = cms.InputTag("simMuonGEMDigis","GEM"),
-    ),
     me0SimHit = cms.PSet(
         verbose = cms.int32(0),
         inputTag = cms.InputTag("g4SimHits", "MuonME0Hits"),

@@ -8,7 +8,6 @@ gemStripValidation = DQMEDAnalyzer('GEMStripDigiValidation',
   GEMValidationCommonParameters,
   gemStripDigi = muonGEMDigiPSet.gemUnpackedStripDigi,
   gemSimHit = muonSimHitMatcherPSet.gemSimHit,
-  gemDigiSimLink = muonSimHitMatcherPSet.gemDigiSimLink,
 )
 
 gemPadValidation = DQMEDAnalyzer('GEMPadDigiValidation',
@@ -35,12 +34,3 @@ gemDigiValidation = cms.Sequence(gemStripValidation +
                                  gemClusterValidation +
                                  gemCoPadValidation +
                                  gemGeometryChecker)
-
-from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
-
-run2_GEM_2017.toReplaceWith(
-    gemDigiValidation,
-    gemDigiValidation.copyAndExclude([
-        gemPadValidation,
-        gemClusterValidation,
-        gemCoPadValidation]))

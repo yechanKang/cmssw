@@ -7,7 +7,6 @@ from Validation.MuonGEMRecHits.muonGEMRecHitPSet import gemRecHit
 gemRecHitsValidation = DQMEDAnalyzer('GEMRecHitValidation',
     GEMValidationCommonParameters,
     gemSimHit = muonSimHitMatcherPSet.gemSimHit,
-    gemDigiSimLink = muonSimHitMatcherPSet.gemDigiSimLink,
     gemRecHit = gemRecHit,
 )
 

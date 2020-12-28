@@ -9,6 +9,8 @@ gemSimHitValidation = DQMEDAnalyzer('GEMSimHitValidation',
     TOFRange = cms.untracked.vdouble(10, 30, # GE0
                                      16, 24, # GEM11
                                      24, 32), # GE21
+    pids = cms.untracked.vint32(22, 11, 211,
+                                2212, 2112, 321),
 )
 
 gemSimValidation = cms.Sequence(gemSimHitValidation)

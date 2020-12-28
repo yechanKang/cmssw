@@ -27,16 +27,15 @@ private:
   // Occupaancy
   MonitorElement* me_total_strip_;
   MEMap3Ids me_total_strip_layer_;
-  MEMap3Ids me_occ_ieta_;
-  MEMap3Ids me_occ_phi_;
 
+  MEMap3Ids me_detail_occ_ieta_;
+  MEMap3Ids me_detail_occ_phi_;
   MEMap3Ids me_detail_occ_xy_;
   MEMap1Ids me_detail_occ_zr_;
   MEMap2Ids me_detail_occ_det_;
   MEMap3Ids me_detail_occ_strip_;
 
   // Bunch Crossing
-  MonitorElement* me_bx_;
   MEMap3Ids me_detail_bx_;
 
   // Strip that matches the SimHit

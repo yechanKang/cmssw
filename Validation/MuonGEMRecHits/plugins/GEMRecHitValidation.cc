@@ -13,8 +13,7 @@ GEMRecHitValidation::GEMRecHitValidation(const edm::ParameterSet& pset)
   const auto& simhit_tag = simhit_pset.getParameter<edm::InputTag>("inputTag");
   simhit_token_ = consumes<edm::PSimHitContainer>(simhit_tag);
 
-  const auto& digisimlink_pset = pset.getParameterSet("gemDigiSimLink");
-  const auto& digisimlink_tag = digisimlink_pset.getParameter<edm::InputTag>("inputTag");
+  const auto& digisimlink_tag = pset.getParameter<edm::InputTag>("gemDigiSimLink");
   digisimlink_token_ = consumes<edm::DetSetVector<GEMDigiSimLink>>(digisimlink_tag);
 
   geomToken_ = esConsumes<GEMGeometry, MuonGeometryRecord>();
@@ -32,18 +31,18 @@ void GEMRecHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
   TString cls_title = "Cluster Size Distribution";
   TString cls_x_title = "Cluster size";
 
-  me_cls_ = booker.book1D("cls", cls_title + ";" + cls_x_title + ";" + "Entries", 11, -0.5, 10.5);
-
-  for (const auto& station : gem->regions()[0]->stations()) {
-    Int_t station_id = station->station();
-    for (const auto& roll : station->superChambers()[0]->chambers()[0]->etaPartitions()) {
-      Int_t roll_id = roll->id().roll();
-      ME2IdsKey key{station_id, roll_id};
-      me_cls_roll_[key] = booker.book1D(Form("cls_GE%d1_R%d", station_id, roll_id),
-                                        Form("Cluster Size Distribution : GE%d1 Roll %d", station_id, roll_id),
-                                        11,
-                                        -0.5,
-                                        10.5);
+  if (detail_plot_) {
+    for (const auto& station : gem->regions()[0]->stations()) {
+      Int_t station_id = station->station();
+      for (const auto& roll : station->superChambers()[0]->chambers()[0]->etaPartitions()) {
+        Int_t roll_id = roll->id().roll();
+        ME2IdsKey key{station_id, roll_id};
+        me_detail_cls_roll_[key] = booker.book1D(Form("cls_GE%d1_R%d", station_id, roll_id),
+                                                 Form("Cluster Size Distribution : GE%d1 Roll %d", station_id, roll_id),
+                                                 11,
+                                                 -0.5,
+                                                 10.5);
+      }
     }
   }
 
@@ -202,16 +201,6 @@ void GEMRecHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
 
           Int_t num_eta_partitions = chamber->nEtaPartitions();
 
-          me_occ_ieta_[key3] = bookHist1D(booker,
-                                          key3,
-                                          "rechit_occ_ieta",
-                                          "Rechit Occupancy per eta partition",
-                                          num_eta_partitions,
-                                          0.5,
-                                          num_eta_partitions + 0.5);
-
-          me_occ_phi_[key3] = bookHist1D(booker, key3, "rechit_occ_phi", "Rechit Phi Occupancy", 108, -5, 355);
-
           me_rechit_occ_eta_[key3] = bookHist1D(booker,
                                                 key3,
                                                 "matched_rechit_occ_eta",
@@ -225,6 +214,16 @@ void GEMRecHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
               bookHist1D(booker, key3, "matched_rechit_occ_phi", "Matched RecHit Phi Occupancy", 36, -5, 355, "#phi");
 
           if (detail_plot_) {
+            me_detail_occ_ieta_[key3] = bookHist1D(booker,
+                                                   key3,
+                                                   "rechit_occ_ieta",
+                                                   "Rechit Occupancy per eta partition",
+                                                   num_eta_partitions,
+                                                   0.5,
+                                                   num_eta_partitions + 0.5);
+
+            me_detail_occ_phi_[key3] = bookHist1D(booker, key3, "rechit_occ_phi", "Rechit Phi Occupancy", 108, -5, 355);
+
             me_detail_occ_xy_[key3] = bookXYOccupancy(booker, key3, "rechit", "RecHit");
 
             me_detail_occ_polar_[key3] = bookPolarOccupancy(booker, key3, "rechit", "RecHit");
@@ -300,16 +299,14 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
 
     // overflow handling for cluster size
     cls = cls > 10 ? 10 : cls;
-    me_cls_->Fill(cls);
-    me_cls_roll_[key]->Fill(cls);
-
-    me_occ_ieta_[key3]->Fill(roll_id);
-    me_occ_phi_[key3]->Fill(rechit_g_phi);
 
     if (detail_plot_) {
+      me_detail_occ_ieta_[key3]->Fill(roll_id);
+      me_detail_occ_phi_[key3]->Fill(rechit_g_phi);
       me_detail_occ_xy_[key3]->Fill(rechit_g_x, rechit_g_y);
       me_detail_occ_zr_[region_id]->Fill(rechit_g_abs_z, rechit_g_r);
       me_detail_cls_[key4]->Fill(cls);
+      me_detail_cls_roll_[key]->Fill(cls);
       me_detail_occ_polar_[key3]->Fill(rechit_g_phi, rechit_g_r);
     }  // detail plot
   }

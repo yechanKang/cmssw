@@ -11,8 +11,7 @@ GEMStripDigiValidation::GEMStripDigiValidation(const edm::ParameterSet& pset)
   const auto& simhit_tag = simhit_pset.getParameter<edm::InputTag>("inputTag");
   simhit_token_ = consumes<edm::PSimHitContainer>(simhit_tag);
 
-  const auto& digisimlink_pset = pset.getParameterSet("gemDigiSimLink");
-  const auto& digisimlink_tag = digisimlink_pset.getParameter<edm::InputTag>("inputTag");
+  const auto& digisimlink_tag = pset.getParameter<edm::InputTag>("gemDigiSimLink");
   digisimlink_token_ = consumes<edm::DetSetVector<GEMDigiSimLink>>(digisimlink_tag);
 
   geomToken_ = esConsumes<GEMGeometry, MuonGeometryRecord>();
@@ -30,8 +29,6 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
 
   // NOTE Bunch Crossing
   booker.setCurrentFolder("MuonGEMDigisV/GEMDigisTask/Strip/BunchCrossing");
-
-  me_bx_ = booker.book1D("strip_bx", "Strip Digi Bunch Crossing", 11, -10.5, 10.5);
 
   if (detail_plot_) {
     for (const auto& region : gem->regions()) {
@@ -116,22 +113,10 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
           Int_t num_strips = etaPartitionsVec.front()->nstrips();
           Int_t num_eta_partitions = chamber->nEtaPartitions();
 
-          me_occ_ieta_[key3] = bookHist1D(booker,
-                                          key3,
-                                          "strip_ieta_occ",
-                                          "Strip Digi Occupancy per eta partition",
-                                          num_eta_partitions,
-                                          0.5,
-                                          num_eta_partitions + 0.5,
-                                          "i_{#eta}");
-
-          me_occ_phi_[key3] =
-              bookHist1D(booker, key3, "strip_phi_occ", "Strip Digi Phi Occupancy", 108, -5, 355, "#phi [degrees]");
-
           me_total_strip_layer_[key3] = bookHist1D(booker,
                                                    key3,
                                                    "total_strips_per_event",
-                                                   "Total nubmer of strip digis per event for each layers",
+                                                   "Total number of strip digis per event for each layers",
                                                    50,
                                                    -0.5,
                                                    99.5);
@@ -160,6 +145,18 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
                                                     0.5,
                                                     num_strips + 0.5,
                                                     "strip number");
+
+            me_detail_occ_ieta_[key3] = bookHist1D(booker,
+                                                   key3,
+                                                   "strip_ieta_occ",
+                                                   "Strip Digi Occupancy per eta partition",
+                                                   num_eta_partitions,
+                                                   0.5,
+                                                   num_eta_partitions + 0.5,
+                                                   "i_{#eta}");
+
+            me_detail_occ_phi_[key3] =
+                bookHist1D(booker, key3, "strip_phi_occ", "Strip Digi Phi Occupancy", 108, -5, 355, "#phi [degrees]");
           }  // detail plot
         }    // chamber
       }      // end else
@@ -239,12 +236,10 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
       Float_t digi_g_y = strip_global_pos.y();
       Float_t digi_g_phi = toDegree(strip_global_pos.phi());
 
-      me_bx_->Fill(bx);
-      me_occ_ieta_[key3]->Fill(roll_id);
-      me_occ_phi_[key3]->Fill(digi_g_phi);
-
       if (detail_plot_) {
         me_detail_bx_[key3]->Fill(bx);
+        me_detail_occ_ieta_[key3]->Fill(roll_id);
+        me_detail_occ_phi_[key3]->Fill(digi_g_phi);
         me_detail_occ_xy_[key3]->Fill(digi_g_x, digi_g_y);
         me_detail_occ_zr_[region_id]->Fill(digi_g_abs_z, digi_g_r);
         me_detail_occ_det_[key2]->Fill(bin_x, roll_id);

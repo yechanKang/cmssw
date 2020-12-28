@@ -3,7 +3,8 @@ import FWCore.ParameterSet.Config as cms
 
 GEMValidationCommonParameters = cms.PSet(
     #detail plot
-    detailPlot = cms.bool(True),
+    detailPlot = cms.bool(False),
+    gemDigiSimLink = cms.InputTag("simMuonGEMDigis","GEM"),
     # ZR occupancy plots
     ZROccRange = cms.untracked.vdouble(
     #   xlow, xup, ylow, yup
