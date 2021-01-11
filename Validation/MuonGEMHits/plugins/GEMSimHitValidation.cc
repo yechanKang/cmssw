@@ -150,7 +150,7 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
 }
 
 std::tuple<Double_t, Double_t> GEMSimHitValidation::getTOFRange(Int_t station_id) {
-  UInt_t start_index = station_id == 1 ? 0 : 2;
+  UInt_t start_index = station_id * 2;
   Double_t tof_min = tof_range_[start_index];
   Double_t tof_max = tof_range_[start_index + 1];
   return std::make_tuple(tof_min, tof_max);
