@@ -25,7 +25,9 @@ gemCoPadValidation = DQMEDAnalyzer('GEMCoPadDigiValidation',
   gemCoPadDigi = muonGEMDigiPSet.gemCoPadDigi,
 )
 
-gemGeometryChecker = DQMEDAnalyzer('GEMCheckGeometry',)
+gemGeometryChecker = DQMEDAnalyzer('GEMCheckGeometry',
+  GEMValidationCommonParameters,
+)
 
 gemDigiValidation = cms.Sequence(gemStripValidation +
                                  gemPadValidation +
