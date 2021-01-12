@@ -83,12 +83,14 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
       for (const auto& station : region->stations()) {
         Int_t station_id = station->station();
         ME2IdsKey key2{region_id, station_id};
-        
-        me_detail_total_strip_[key2] = bookHist1D(booker, key2, "total_strips_per_event", "Total number of strip digs per event", 50, -0.5, 99.5);
+
+        me_detail_total_strip_[key2] =
+            bookHist1D(booker, key2, "total_strips_per_event", "Total number of strip digs per event", 50, -0.5, 99.5);
 
         me_detail_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "strip", "Strip Digi");
 
-        me_detail_strip_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "matched_strip", "Matched Strip Digi");
+        me_detail_strip_occ_det_[key2] =
+            bookDetectorOccupancy(booker, key2, station, "matched_strip", "Matched Strip Digi");
 
         const auto& superChamberVec = station->superChambers();
         if (superChamberVec.empty() || superChamberVec[0] == nullptr) {
@@ -157,7 +159,7 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
     edm::LogError(kLogCategory_) << "Failed to get GEMDigiSimLink." << std::endl;
     return;
   }
-  
+
   edm::Handle<edm::PSimHitContainer> simhit_container;
   event.getByToken(simhit_token_, simhit_container);
   if (not simhit_container.isValid()) {
@@ -230,7 +232,6 @@ void GEMStripDigiValidation::analyze(const edm::Event& event, const edm::EventSe
       me_detail_total_strip_[key]->Fill(num_total_strip);
     }
   }
-
 
   // NOTE
   if (detail_plot_) {

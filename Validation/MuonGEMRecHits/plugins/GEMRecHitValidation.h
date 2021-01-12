@@ -48,7 +48,7 @@ private:
   MEMap1Ids me_detail_occ_zr_;
   MEMap3Ids me_detail_occ_xy_;
   MEMap3Ids me_detail_occ_polar_;
-  
+
   // GEMRecHit that matches PSimHit
   MEMap3Ids me_rechit_occ_eta_;
   MEMap3Ids me_rechit_occ_phi_;

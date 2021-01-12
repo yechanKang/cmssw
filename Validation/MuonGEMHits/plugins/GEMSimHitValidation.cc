@@ -34,13 +34,13 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
       const auto& superChamberVec = station->superChambers();
       ME2IdsKey key2{region_id, station_id};
 
-      me_tof_mu_[key2] = bookHist1D(
-          booker, key2, "tof_muon", "SimHit TOF (Muon only)", 20, tof_min, tof_max, tof_xtitle, tof_ytitle);
+      me_tof_mu_[key2] =
+          bookHist1D(booker, key2, "tof_muon", "SimHit TOF (Muon only)", 20, tof_min, tof_max, tof_xtitle, tof_ytitle);
 
       me_tof_others_[key2] = bookHist1D(
           booker, key2, "tof_others", "SimHit TOF (Other Particles)", 20, tof_min, tof_max, tof_xtitle, tof_ytitle);
-    }      // station loop
-  }        // region loop
+    }  // station loop
+  }    // region loop
 
   if (detail_plot_) {
     for (const auto& region : gem->regions()) {
@@ -134,7 +134,7 @@ void GEMSimHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
     Int_t region_id = region->region();
 
     if (detail_plot_)
-       me_detail_occ_zr_[region_id] = bookZROccupancy(booker, region_id, "simhit", "SimHit");
+      me_detail_occ_zr_[region_id] = bookZROccupancy(booker, region_id, "simhit", "SimHit");
 
     for (const auto& station : region->stations()) {
       Int_t station_id = station->station();
@@ -240,7 +240,7 @@ void GEMSimHitValidation::analyze(const edm::Event& event, const edm::EventSetup
     if (detail_plot_) {
       me_detail_tof_[key3]->Fill(tof);
       me_detail_eloss_[key3]->Fill(energy_loss);
-  
+
       me_detail_occ_zr_[region_id]->Fill(simhit_g_abs_z, simhit_g_r);
       me_detail_occ_det_[key2]->Fill(bin_x, roll_id);
       me_detail_occ_xy_[key3]->Fill(simhit_g_x, simhit_g_y);

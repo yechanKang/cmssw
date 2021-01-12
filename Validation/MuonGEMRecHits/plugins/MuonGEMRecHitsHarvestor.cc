@@ -33,7 +33,8 @@ void MuonGEMRecHitsHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGe
         bookEff2D(booker, getter, rechit_det_path, simhit_det_path, eff_folder, eff_det_name, eff_det_title);
       }
       for (const auto& layer_id : layer_ids_) {
-        if (station_id != 0 and layer_id > 2) continue;
+        if (station_id != 0 and layer_id > 2)
+          continue;
         TString name_suf_re_st_ly = GEMUtils::getSuffixName(region_id, station_id, layer_id);
         TString title_suf_re_st_ly = GEMUtils::getSuffixTitle(region_id, station_id, layer_id);
 
