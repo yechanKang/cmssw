@@ -24,6 +24,7 @@ public:
 protected:
   Int_t getDetOccBinX(Int_t num_layers, Int_t chamber_id, Int_t layer_id);
   Bool_t isMuonSimHit(const PSimHit&);
+  Float_t toDegree(Float_t radian);
 
   dqm::impl::MonitorElement* bookZROccupancy(DQMStore::IBooker& booker,
                                              Int_t region_id,

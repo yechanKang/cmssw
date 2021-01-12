@@ -26,6 +26,14 @@ Int_t GEMBaseValidation::getDetOccBinX(Int_t num_layers, Int_t chamber_id, Int_t
 
 Bool_t GEMBaseValidation::isMuonSimHit(const PSimHit& simhit) { return std::abs(simhit.particleType()) == kMuonPDGId_; }
 
+Float_t GEMBaseValidation::toDegree(Float_t radian) {
+  Float_t degree = radian / M_PI * 180;
+  if (degree < -5)
+    return degree + 360;
+  else
+    return degree;
+}
+
 MonitorElement* GEMBaseValidation::bookZROccupancy(DQMStore::IBooker& booker,
                                                    Int_t region_id,
                                                    const char* name_prefix,

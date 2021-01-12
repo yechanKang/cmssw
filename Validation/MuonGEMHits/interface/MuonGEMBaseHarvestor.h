@@ -44,6 +44,7 @@ protected:
 
   // Constnats
   const std::string kLogCategory_;  // see member initializer list
+  Bool_t detail_plot_;
 };
 
 #endif  // Validation_MuonGEMHits_MuonGEMBaseHarvestor_h
