@@ -3,7 +3,9 @@
 #include "TEfficiency.h"
 
 MuonGEMBaseHarvestor::MuonGEMBaseHarvestor(const edm::ParameterSet& pset, std::string log_category)
-    : kLogCategory_(log_category) {}
+    : kLogCategory_(log_category) {
+  detail_plot_ = pset.getParameter<Bool_t>("detailPlot");
+}
 
 TProfile* MuonGEMBaseHarvestor::computeEfficiency(
     const TH1F& passed, const TH1F& total, const char* name, const char* title, Double_t confidence_level) {
@@ -13,7 +15,7 @@ TProfile* MuonGEMBaseHarvestor::computeEfficiency(
   eff_profile->GetXaxis()->SetTitle(total_x->GetTitle());
   eff_profile->GetYaxis()->SetTitle("#epsilon");
 
-  for (Int_t bin = 1; bin < total.GetXaxis()->GetNbins(); bin++) {
+  for (Int_t bin = 1; bin <= total.GetXaxis()->GetNbins(); bin++) {
     Double_t num_passed = passed.GetBinContent(bin);
     Double_t num_total = total.GetBinContent(bin);
 

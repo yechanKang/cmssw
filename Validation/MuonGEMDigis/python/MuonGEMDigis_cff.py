@@ -6,38 +6,36 @@ from Validation.MuonGEMHits.MuonGEMCommonParameters_cfi import GEMValidationComm
 
 gemStripValidation = DQMEDAnalyzer('GEMStripDigiValidation',
   GEMValidationCommonParameters,
-  detailPlot = cms.bool(True),
   gemStripDigi = muonGEMDigiPSet.gemUnpackedStripDigi,
   gemSimHit = muonSimHitMatcherPSet.gemSimHit,
 )
 
 gemPadValidation = DQMEDAnalyzer('GEMPadDigiValidation',
   GEMValidationCommonParameters,
-  detailPlot = cms.bool(True),
   gemPadDigi = muonGEMDigiPSet.gemPadDigi,
+  gemSimHit = muonSimHitMatcherPSet.gemSimHit,
 )
 
 gemClusterValidation = DQMEDAnalyzer('GEMPadDigiClusterValidation',
   GEMValidationCommonParameters,
-  detailPlot = cms.bool(True),
   gemPadCluster = muonGEMDigiPSet.gemPadCluster,
+  gemSimHit = muonSimHitMatcherPSet.gemSimHit,
 )
 
 gemCoPadValidation = DQMEDAnalyzer('GEMCoPadDigiValidation',
   GEMValidationCommonParameters,
-  detailPlot = cms.bool(True),
   gemCoPadDigi = muonGEMDigiPSet.gemCoPadDigi,
 )
 
 gemGeometryChecker = DQMEDAnalyzer('GEMCheckGeometry',
-  detailPlot = cms.bool(False),
+  GEMValidationCommonParameters,
 )
 
 gemDigiValidation = cms.Sequence(gemStripValidation +
                                  gemPadValidation +
                                  gemClusterValidation +
-                                 gemCoPadValidation +
-                                 gemGeometryChecker)
+                                 gemCoPadValidation)# +
+#                                 gemGeometryChecker)
 
 from Configuration.Eras.Modifier_run2_GEM_2017_cff import run2_GEM_2017
 
