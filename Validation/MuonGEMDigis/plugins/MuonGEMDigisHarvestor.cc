@@ -43,7 +43,8 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
       }
 
       for (Int_t layer_id : layer_ids_) {
-        if (station_id != 0 and layer_id > 2) continue;
+        if (station_id != 0 and layer_id > 2)
+          continue;
         TString name_suffix_re_st_ly = GEMUtils::getSuffixName(region_id, station_id, layer_id);
         TString title_suffix_re_st_ly = GEMUtils::getSuffixTitle(region_id, station_id, layer_id);
 
@@ -58,7 +59,8 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
         TString eff_eta_name = "eff_eta" + name_suffix_re_st_ly;
         TString eff_eta_title = "Eta Efficiency (Muon Only) :" + title_suffix_re_st_ly;
 
-        if (detail_plot_) bookEff1D(booker, getter, strip_eta_path, simhit_eta_path, eff_folder, eff_eta_name, eff_eta_title);
+        if (detail_plot_)
+          bookEff1D(booker, getter, strip_eta_path, simhit_eta_path, eff_folder, eff_eta_name, eff_eta_title);
         bookEff1D(booker, getter, pad_eta_path, simhit_eta_path, eff_folder_pad, eff_eta_name, eff_eta_title);
         bookEff1D(booker, getter, cluster_eta_path, simhit_eta_path, eff_folder_cluster, eff_eta_name, eff_eta_title);
 
@@ -73,7 +75,8 @@ void MuonGEMDigisHarvestor::dqmEndJob(DQMStore::IBooker& booker, DQMStore::IGett
         TString eff_phi_name = "eff_phi" + name_suffix_re_st_ly;
         TString eff_phi_title = "Phi Efficiency (Muon Only) :" + title_suffix_re_st_ly;
 
-        if (detail_plot_) bookEff1D(booker, getter, strip_phi_path, simhit_phi_path, eff_folder, eff_phi_name, eff_phi_title);
+        if (detail_plot_)
+          bookEff1D(booker, getter, strip_phi_path, simhit_phi_path, eff_folder, eff_phi_name, eff_phi_title);
         bookEff1D(booker, getter, pad_phi_path, simhit_phi_path, eff_folder_pad, eff_phi_name, eff_phi_title);
         bookEff1D(booker, getter, cluster_phi_path, simhit_phi_path, eff_folder_cluster, eff_phi_name, eff_phi_title);
       }  // layer loop

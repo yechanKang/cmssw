@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 
 GEMValidationCommonParameters = cms.PSet(
-    detailPlot = cms.bool(True),
+    detailPlot = cms.bool(False),
     gemDigiSimLink = cms.InputTag("simMuonGEMDigis","GEM"),
     pidList = cms.untracked.vint32(13, -13,    # muons
                                    11, -11,    # electrons

@@ -216,7 +216,7 @@ void GEMRecHitValidation::bookHistograms(DQMStore::IBooker& booker, edm::Run con
           Int_t num_eta_partitions = chamber->nEtaPartitions();
 
           me_total_rechit_[key3] =
-              bookHist1D(booker, key3, "total_rechit", "Total number of RecHits per event", 25, -0.5, 24.5);
+              bookHist1D(booker, key3, "total_rechit", "Number of rec hits per event", 25, -0.5, 24.5);
 
           me_occ_pid_[key3] = bookPIDHist(booker, key3, "rechit_occ_pid", "Number of entreis for each particle");
 
@@ -311,8 +311,10 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
     Float_t rechit_g_r = rechit_global_pos.perp();
     Float_t rechit_g_phi = toDegree(rechit_global_pos.phi());
 
+    Int_t first_strip = rechit.firstClusterStrip();
     Int_t cls = rechit.clusterSize();
     cls = cls > 10 ? 10 : cls;
+
     me_cls_roll_[key]->Fill(cls);
     me_occ_ieta_[key3]->Fill(roll_id);
     me_occ_phi_[key3]->Fill(rechit_g_phi);
@@ -326,6 +328,33 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
       me_detail_occ_xy_[key3]->Fill(rechit_g_x, rechit_g_y);
       me_detail_occ_polar_[key3]->Fill(rechit_g_phi, rechit_g_r);
     }  // detail plot
+
+    auto links = digiSimLink->find(gem_id);
+
+    if (links == digiSimLink->end())
+      continue;
+    std::map<Int_t, Int_t> pid_count;
+
+    for (Int_t strip = first_strip; strip < first_strip + cls; strip++) {
+      for (const auto& link : *links) {
+        Int_t link_strip = link.getStrip();
+        if (link_strip == strip) {
+          Int_t pid = link.getParticleType();
+          pid_count[pid]++;
+          break;
+        }
+      }
+    }
+    Int_t max_pid = 0;
+    Int_t max_count = 0;
+    for (auto& [pid, count] : pid_count) {
+      if (max_count < count) {
+        max_pid = pid;
+        max_count = count;
+      }
+    }
+    Int_t pid_idx = getPidIdx(max_pid);
+    me_occ_pid_[key3]->Fill(pid_idx);
   }
 
   for (auto [key, num_total_rechit] : total_rechit) {
@@ -383,15 +412,10 @@ void GEMRecHitValidation::analyze(const edm::Event& event, const edm::EventSetup
         continue;
       }
 
+      if (not isMuonSimHit(simhit))
+        continue;
+
       if (matchRecHitAgainstSimHit(rechit, simhit_strip)) {
-        Int_t pid = simhit.particleType();
-        Int_t pid_idx = getPidIdx(pid);
-
-        me_occ_pid_[key3]->Fill(pid_idx);
-
-        if (not isMuonSimHit(simhit))
-          continue;
-
         const LocalPoint& rechit_local_pos = rechit->localPosition();
 
         Float_t resolution_x = std::sqrt(rechit->localPositionError().xx());

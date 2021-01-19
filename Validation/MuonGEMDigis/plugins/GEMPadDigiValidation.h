@@ -23,6 +23,7 @@ private:
   edm::ESGetToken<GEMGeometry, MuonGeometryRecord> geomTokenBeginRun_;
 
   // NOTE MonitorElemnts
+  MEMap3Ids me_occ_total_pad_;
   MEMap3Ids me_pad_occ_eta_;
   MEMap3Ids me_pad_occ_phi_;
   MEMap2Ids me_detail_occ_det_;

@@ -70,7 +70,7 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
   // NOTE Occupancy
   booker.setCurrentFolder("MuonGEMDigisV/GEMDigisTask/Strip/Occupancy");
 
-  me_total_strip_ = booker.book1D("total_strips_per_event", "Total number of Strip Digi per Event", 50, -0.5, 395.5);
+  me_total_strip_ = booker.book1D("total_strips_per_event", "Number of strip digi per event", 50, -0.5, 395.5);
 
   for (const auto& region : gem->regions()) {
     Int_t region_id = region->region();
@@ -84,7 +84,7 @@ void GEMStripDigiValidation::bookHistograms(DQMStore::IBooker& booker,
 
       if (detail_plot_) {
         me_detail_total_strip_[key2] =
-            bookHist1D(booker, key2, "total_strips_per_event", "Total number of strip digs per event", 50, -0.5, 99.5);
+            bookHist1D(booker, key2, "total_strips_per_event", "Number of strip digs per event", 50, -0.5, 99.5);
 
         me_detail_occ_det_[key2] = bookDetectorOccupancy(booker, key2, station, "strip", "Strip Digi");
 

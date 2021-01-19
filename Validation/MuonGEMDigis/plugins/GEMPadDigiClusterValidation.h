@@ -23,6 +23,8 @@ private:
   edm::ESGetToken<GEMGeometry, MuonGeometryRecord> geomToken_;
   edm::ESGetToken<GEMGeometry, MuonGeometryRecord> geomTokenBeginRun_;
 
+  MonitorElement* me_cls_;
+  MEMap3Ids me_total_cluster_;
   MEMap3Ids me_pad_cluster_occ_eta_;
   MEMap3Ids me_pad_cluster_occ_phi_;
   MEMap2Ids me_detail_occ_det_;

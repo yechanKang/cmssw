@@ -64,17 +64,21 @@ void GEMPadDigiValidation::bookHistograms(DQMStore::IBooker& booker,
           continue;
         }
         Int_t num_pads = etaPartitionVec.front()->npads();
-        
-        me_pad_occ_eta_[key3] = bookHist1D(booker, 
-                                           key3, 
-                                           "matched_pad_occ_eta", 
-                                           "Matched Pad Eta Occupancy", 
-                                           16, 
-                                           eta_range_[station_id * 2 + 0], 
-                                           eta_range_[station_id * 2 + 1], 
+
+        me_occ_total_pad_[key3] =
+            bookHist1D(booker, key3, "total_pads_per_event", "Number of pad digis per event", 51, -0.5, 50);
+
+        me_pad_occ_eta_[key3] = bookHist1D(booker,
+                                           key3,
+                                           "matched_pad_occ_eta",
+                                           "Matched Pad Eta Occupancy",
+                                           16,
+                                           eta_range_[station_id * 2 + 0],
+                                           eta_range_[station_id * 2 + 1],
                                            "#eta");
-        
-        me_pad_occ_phi_[key3] = bookHist1D(booker, key3, "matched_pad_occ_phi", "Matched Pad Phi Occupancy", 36, -5, 355, "#phi [degrees]");
+
+        me_pad_occ_phi_[key3] =
+            bookHist1D(booker, key3, "matched_pad_occ_phi", "Matched Pad Phi Occupancy", 36, -5, 355, "#phi [degrees]");
 
         if (detail_plot_) {
           me_detail_occ_xy_[key3] = bookXYOccupancy(booker, key3, "pad", "Pad");
@@ -157,6 +161,7 @@ void GEMPadDigiValidation::analyze(const edm::Event& event, const edm::EventSetu
     return;
   }
 
+  std::map<ME3IdsKey, Int_t> total_pad;
   for (const auto& pad_pair : *collection) {
     GEMDetId gemid = pad_pair.first;
     const auto& range = pad_pair.second;
@@ -185,6 +190,8 @@ void GEMPadDigiValidation::analyze(const edm::Event& event, const edm::EventSetu
       if (gemid.isGE21() and digi->nPartitions() == GEMPadDigi::GE21SplitStrip)
         continue;
 
+      total_pad[key3]++;
+
       Int_t pad = digi->pad();
       Int_t bx = digi->bx();
 
@@ -209,11 +216,15 @@ void GEMPadDigiValidation::analyze(const edm::Event& event, const edm::EventSetu
       }  // if detail_plot
     }    // digi loop
   }      // range loop
-  
+
+  for (auto& [key, num_total_pad] : total_pad) {
+    me_occ_total_pad_[key]->Fill(num_total_pad);
+  }
 
   // NOTE
   for (const auto& simhit : *simhit_container.product()) {
-    if (not isMuonSimHit(simhit)) continue;
+    if (not isMuonSimHit(simhit))
+      continue;
     if (gem->idToDet(simhit.detUnitId()) == nullptr) {
       edm::LogError(kLogCategory_) << "SimHit did not match with GEMGeometry." << std::endl;
       continue;
