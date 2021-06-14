@@ -65,7 +65,7 @@ options.register('reconstruct',
                  VarParsing.VarParsing.varType.bool,
                  'Reconstruct the data')
 options.register('feds',
-                 '',
+                 [1467,1468],
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.int,
                  "List of FEDs")
@@ -136,7 +136,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '112X_dataRun3_Prompt_v5', '')
 process.dumpRaw = cms.EDAnalyzer(
     "DumpFEDRawDataProduct",
     token = cms.untracked.InputTag("rawDataCollector"),
-    feds = cms.untracked.vint32(1457),
+    feds = cms.untracked.vint32(options.feds),
     dumpPayload = cms.untracked.bool ( options.dumpRaw )
 )
 
