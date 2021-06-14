@@ -144,7 +144,7 @@ process.dumpRaw = cms.EDAnalyzer(
 process.output = cms.OutputModule(
     "PoolOutputModule",
     outputCommands = cms.untracked.vstring("keep *"),
-    fileName = cms.untracked.string('output.root')
+    fileName = cms.untracked.string('output_edm.root')
 )
 
 process.simMuonGEMPadDigis.InputCollection = 'muonGEMDigis'
