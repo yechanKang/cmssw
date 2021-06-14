@@ -44,16 +44,6 @@ options.register('edm',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Produce EDM file")
-options.register('valEvents',
-                 True,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.bool,
-                 "Filter on validation events")
-options.register('mps',
-                 '',
-                 VarParsing.VarParsing.multiplicity.list,
-                 VarParsing.VarParsing.varType.int,
-                 "List of MPs to process")
 options.register('json',
                  '',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -101,7 +91,6 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('EventFilter.GEMRawToDigi.muonGEMDigis_cfi')
 process.load('L1Trigger.L1TGEM.simGEMDigis_cff')
 process.load('EventFilter.L1TRawToDigi.validationEventFilter_cfi')
-process.load('EventFilter.L1TRawToDigi.tmtFilter_cfi')
 process.load("CommonTools.UtilAlgos.TFileService_cfi")
 
 process.maxEvents = cms.untracked.PSet(
@@ -143,9 +132,6 @@ if (options.debug):
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, '112X_dataRun3_Prompt_v5', '')
 
-# MP selecter
-process.tmtFilter.mpList = cms.untracked.vint32(options.mps)
-
 # dump raw data
 process.dumpRaw = cms.EDAnalyzer(
     "DumpFEDRawDataProduct",
@@ -164,39 +150,29 @@ process.output = cms.OutputModule(
 process.simMuonGEMPadDigis.InputCollection = 'muonGEMDigis'
 
 ## schedule and path definition
-process.p1 = cms.Path(process.validationEventFilter)
-process.p2 = cms.Path(process.tmtFilter)
-process.p3 = cms.Path(process.dumpRaw)
-process.p4 = cms.Path(process.muonGEMDigis)
-process.p5 = cms.Path(process.simMuonGEMPadDigis * process.simMuonGEMPadDigiClusters)
-process.p6 = cms.Path(process.gemRecHits * process.gemSegments)
+process.p1 = cms.Path(process.dumpRaw)
+process.p2 = cms.Path(process.muonGEMDigis)
+process.p3 = cms.Path(process.simMuonGEMPadDigis * process.simMuonGEMPadDigiClusters)
+process.p4 = cms.Path(process.gemRecHits * process.gemSegments)
 process.out = cms.EndPath(process.output)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 
 process.schedule = cms.Schedule()
 
-# enable validation event filtering
-if options.valEvents:
-    process.schedule.extend([process.p1])
-
-# enable validation event filtering
-if len(options.mps)!=0:
-    process.schedule.extend([process.p2])
-
 # enable RAW printout
 if options.dumpRaw:
-    process.schedule.extend([process.p3])
+    process.schedule.extend([process.p1])
 
 # always add unpacker
-process.schedule.extend([process.p4])
+process.schedule.extend([process.p2])
 
 # triggers
 if options.trigger:
-    process.schedule.extend([process.p5])
+    process.schedule.extend([process.p3])
 
 # reconstruct rechits and segments
 if options.reconstruct:
-    process.schedule.extend([process.p6])
+    process.schedule.extend([process.p4])
 
 if options.edm:
     process.schedule.extend([process.out])
