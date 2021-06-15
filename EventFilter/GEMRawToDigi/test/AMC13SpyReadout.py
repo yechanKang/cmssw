@@ -27,7 +27,7 @@ process.source = cms.Source(
     verifyAdler32 = cms.untracked.bool(False),
     verifyChecksum = cms.untracked.bool(False),
     useL1EventID = cms.untracked.bool(False),
-    firstLuminosityBlockForEachRun = cms.untracked.VLuminosityBlockID(*[cms.LuminosityBlockID(0,0)]),
+    firstLuminosityBlockForEachRun = cms.untracked.VLuminosityBlockID(*[cms.LuminosityBlockID(1,0)]),
 )
 
 process.output = cms.OutputModule(

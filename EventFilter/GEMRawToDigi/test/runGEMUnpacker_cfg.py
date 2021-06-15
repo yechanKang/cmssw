@@ -69,6 +69,11 @@ options.register('feds',
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.int,
                  "List of FEDs")
+options.register('unpackerLabel',
+                 'source',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Label for the GEM unpacker RAW input collection")
 
 options.parseArguments()
 
@@ -135,9 +140,9 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '112X_dataRun3_Prompt_v5', '')
 # dump raw data
 process.dumpRaw = cms.EDAnalyzer(
     "DumpFEDRawDataProduct",
-    token = cms.untracked.InputTag("rawDataCollector"),
+    token = cms.untracked.InputTag(options.unpackerLabel),
     feds = cms.untracked.vint32(options.feds),
-    dumpPayload = cms.untracked.bool ( options.dumpRaw )
+    dumpPayload = cms.untracked.bool(options.dumpRaw)
 )
 
 # optional EDM file
@@ -147,6 +152,7 @@ process.output = cms.OutputModule(
     fileName = cms.untracked.string('output_edm.root')
 )
 
+process.muonGEMDigis.InputLabel = options.unpackerLabel
 process.simMuonGEMPadDigis.InputCollection = 'muonGEMDigis'
 
 ## schedule and path definition
