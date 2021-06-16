@@ -113,7 +113,9 @@ else :
     process.source = cms.Source (
         "PoolSource",
         fileNames = cms.untracked.vstring (options.inputFiles),
-        skipEvents=cms.untracked.uint32(options.skipEvents)
+        skipEvents=cms.untracked.uint32(options.skipEvents),
+        ## this line is needed to run the unpacker on output from AMC13SpyReadout.py
+        labelRawDataLikeMC = cms.untracked.bool(False)
     )
 
 if (options.json):
