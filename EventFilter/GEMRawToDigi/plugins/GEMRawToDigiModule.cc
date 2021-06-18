@@ -159,7 +159,7 @@ void GEMRawToDigiModule::produce(edm::StreamID iID, edm::Event& iEvent, edm::Eve
     // Read AMC data
     for (auto amcData : *(amc13Event->getAMCpayloads())) {
       uint16_t amcBx = amcData.bx();
-      uint8_t amcNum = amcData.amcNum();
+      uint8_t amcNum = 3; //amcData.amcNum();
       LogDebug("GEMRawToDigiModule") << "AMC no.:" << int(amcData.amcNum()) << " bx:" << int(amcData.bx())
                                      << " lv1Id:" << int(amcData.l1A()) << " orbitNumber:" << int(amcData.orbitNum());
 
