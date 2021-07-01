@@ -6,5 +6,8 @@
 <library file="GEMGeometryAnalyzer.cc" name="GEMGeometryAnalyzer">
 </library>
 
+<library file="GEMAreaAnalyser.cc" name="GEMAreaAnalyser">
+</library>
+
 <library file="ME0GeometryAnalyzer.cc" name="ME0GeometryAnalyzer">
 </library>
